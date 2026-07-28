@@ -43,15 +43,48 @@
             </div>
 
             <!-- Form Upload File -->
-            <div class="grid grid-cols-1 gap-4">
+            <div class="grid grid-cols-1 gap-4 mb-4">
                 <div>
                     <label class="block text-xs font-semibold uppercase mb-1 text-slate-600">Pilih File Excel Absensi Fingerspot (.xlsx / .xls)</label>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-slate-300 rounded-lg cursor-pointer bg-slate-50">
                 </div>
             </div>
 
+            <!-- Form Pengaturan Jam Kerja -->
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                    <h3 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Pengaturan Jam Kerja Standar Kantor
+                    </h3>
+                    <label class="flex items-center gap-2 text-xs font-medium text-slate-700 bg-white px-2.5 py-1 rounded border border-slate-200 cursor-pointer hover:bg-slate-100 select-none">
+                        <input type="checkbox" id="useBreakLimit" onchange="toggleBreakInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        <span>Aktifkan Batas Jam Istirahat</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">1. Jam Masuk</label>
+                        <input type="time" id="workIn" value="08:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">2. Mulai Istirahat</label>
+                        <input type="time" id="breakStart" value="12:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">3. Selesai Istirahat</label>
+                        <input type="time" id="breakEnd" value="13:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">4. Jam Pulang</label>
+                        <input type="time" id="workOut" value="17:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
+                    </div>
+                </div>
+            </div>
+
             <!-- Filter Tanggal & Nama -->
-            <div id="filterSection" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-100">
+            <div id="filterSection" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tanggal Mulai</label>
                     <input type="date" id="startDate" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500">
@@ -69,18 +102,19 @@
 
         <!-- Section Tabel Rekap -->
         <div id="resultCard" class="hidden bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
-            <div class="p-4 bg-slate-50 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div class="p-4 bg-slate-50 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
                 <div>
                     <span id="officeDisplay" class="text-base font-bold text-indigo-900 block"></span>
                     <span id="summaryText" class="text-xs font-medium text-slate-500"></span>
                 </div>
                 
                 <!-- Legend Warna -->
-                <div class="flex items-center gap-3 text-xs bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                <div class="flex flex-wrap items-center gap-2 text-[11px] bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                     <span class="font-semibold text-slate-600">Keterangan:</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> 0 Scan (Kosong)</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> 1 Scan</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span> ≥ 2 Scan</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Tepat Waktu / 1 Pasang Istirahat</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Terlambat / Pulang Awal / 1 Scan</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block"></span> Istirahat Tidak Lengkap</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Tidak Ada Absen</span>
                 </div>
             </div>
             
@@ -105,6 +139,24 @@
         let detectedOfficeName = '';
 
         document.getElementById('excelFile').addEventListener('change', handleFile, false);
+
+        function toggleBreakInputs() {
+            const useLimit = document.getElementById('useBreakLimit').checked;
+            const bStart = document.getElementById('breakStart');
+            const bEnd = document.getElementById('breakEnd');
+
+            if (useLimit) {
+                bStart.disabled = false;
+                bEnd.disabled = false;
+                bStart.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+                bEnd.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+            } else {
+                bStart.disabled = true;
+                bEnd.disabled = true;
+                bStart.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+                bEnd.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+            }
+        }
 
         function handleFile(e) {
             const file = e.target.files[0];
@@ -137,11 +189,8 @@
                 const tgl = (row['Tanggal Absensi'] || row['Tanggal'] || row['TANGGAL'] || row['Date'] || '').toString().trim();
                 const jam = (row['Jam Absensi'] || row['Jam'] || row['JAM'] || row['Time'] || '').toString().trim();
                 
-                // Ambil Nama Kantor dari Kolom "Kantor"
                 const kantor = (row['Kantor'] || row['KANTOR'] || row['Office'] || row['OFFICE'] || row['Perusahaan'] || row['Departemen'] || '').toString().trim();
-                if (kantor) {
-                    officeSet.add(kantor);
-                }
+                if (kantor) officeSet.add(kantor);
 
                 if (nama && tgl && jam) {
                     let formattedDate = tgl;
@@ -200,6 +249,92 @@
             return { filteredDates, filteredEmployees };
         }
 
+        // Evaluasi Jam Kerja & Pewarnaan Sel
+        function analyzeJamList(jamList) {
+            const wIn = document.getElementById('workIn').value || '08:00';
+            const wOut = document.getElementById('workOut').value || '17:00';
+            const useBreakLimit = document.getElementById('useBreakLimit').checked;
+            const bStart = document.getElementById('breakStart').value || '12:00';
+            const bEnd = document.getElementById('breakEnd').value || '13:00';
+
+            if (!jamList || jamList.length === 0) {
+                return { status: 'EMPTY', items: [] };
+            }
+
+            // KONDISI 1 SCAN
+            if (jamList.length === 1) {
+                const j = jamList[0];
+                const isMasukOk = j <= wIn;
+                return {
+                    status: 'SINGLE',
+                    items: [{
+                        time: j,
+                        type: 'MASUK',
+                        color: isMasukOk ? 'emerald' : 'amber',
+                        label: isMasukOk ? 'Masuk' : 'Terlambat'
+                    }]
+                };
+            }
+
+            // KONDISI 2 SCAN (Istirahat diabaikan)
+            if (jamList.length === 2) {
+                const j1 = jamList[0];
+                const j2 = jamList[1];
+
+                const isMasukOk = j1 <= wIn;
+                const isPulangOk = j2 >= wOut;
+
+                return {
+                    status: 'NO_BREAK',
+                    items: [
+                        { time: j1, type: 'MASUK', color: isMasukOk ? 'emerald' : 'amber', label: isMasukOk ? 'Masuk' : 'Terlambat' },
+                        { time: j2, type: 'PULANG', color: isPulangOk ? 'emerald' : 'amber', label: isPulangOk ? 'Pulang' : 'Pulang Awal' }
+                    ]
+                };
+            }
+
+            // KONDISI 3 ATAU LEBIH SCAN
+            const resultItems = [];
+            
+            // 1. Scan Pertama = Jam Masuk
+            const jFirst = jamList[0];
+            const isMasukOk = jFirst <= wIn;
+            resultItems.push({ time: jFirst, type: 'MASUK', color: isMasukOk ? 'emerald' : 'amber', label: isMasukOk ? 'Masuk' : 'Terlambat' });
+
+            // 2. Scan Terakhir = Jam Pulang
+            const jLast = jamList[jamList.length - 1];
+            const isPulangOk = jLast >= wOut;
+
+            // 3. Middle Scans = Jam Istirahat
+            const middleScans = jamList.slice(1, jamList.length - 1);
+
+            if (middleScans.length === 2) {
+                // Ada 1 Pasang Istirahat (2 Scan di tengah)
+                if (useBreakLimit) {
+                    // Jika dicentang: Periksa ketepatan batas jam istirahat
+                    const isBStartOk = middleScans[0] <= bStart;
+                    const isBEndOk = middleScans[1] >= bEnd;
+
+                    resultItems.push({ time: middleScans[0], type: 'ISTIRAHAT', color: isBStartOk ? 'emerald' : 'amber', label: 'Mulai Istirahat' });
+                    resultItems.push({ time: middleScans[1], type: 'ISTIRAHAT', color: isBEndOk ? 'emerald' : 'amber', label: 'Selesai Istirahat' });
+                } else {
+                    // Jika TIDAK dicentang (Bebas): Asal 1 pasang -> HIJAU
+                    resultItems.push({ time: middleScans[0], type: 'ISTIRAHAT', color: 'emerald', label: 'Mulai Istirahat' });
+                    resultItems.push({ time: middleScans[1], type: 'ISTIRAHAT', color: 'emerald', label: 'Selesai Istirahat' });
+                }
+            } else {
+                // Istirahat tidak 1 pasang (misal cuma 1 scan atau >2 scan) -> JINGGA / ORANGE
+                middleScans.forEach((jMid, idx) => {
+                    resultItems.push({ time: jMid, type: 'ISTIRAHAT', color: 'orange', label: `Istirahat ${idx+1}` });
+                });
+            }
+
+            // Tambahkan Jam Pulang di Akhir
+            resultItems.push({ time: jLast, type: 'PULANG', color: isPulangOk ? 'emerald' : 'amber', label: isPulangOk ? 'Pulang' : 'Pulang Awal' });
+
+            return { status: 'FULL', items: resultItems };
+        }
+
         function renderTable() {
             const { filteredDates, filteredEmployees } = getFilteredData();
 
@@ -214,7 +349,7 @@
             filteredDates.forEach(date => {
                 const dParts = date.split('-');
                 const displayDate = dParts.length === 3 ? `${dParts[2]}/${dParts[1]}` : date;
-                headerHTML += `<th class="p-3 border-r border-slate-700 text-center min-w-[110px]">${displayDate}</th>`;
+                headerHTML += `<th class="p-3 border-r border-slate-700 text-center min-w-[120px]">${displayDate}</th>`;
             });
             headerHTML += `</tr>`;
             thead.innerHTML = headerHTML;
@@ -224,7 +359,6 @@
             let bodyHTML = '';
 
             filteredEmployees.forEach((emp, index) => {
-                // Alternating row background (Zebra Striping)
                 const isEven = index % 2 === 0;
                 const rowBgClass = isEven ? 'bg-white' : 'bg-slate-50';
                 const stickyBgClass = isEven ? 'bg-white' : 'bg-slate-100';
@@ -235,18 +369,22 @@
                 
                 filteredDates.forEach(date => {
                     const jamList = (groupedData[emp] && groupedData[emp][date]) ? groupedData[emp][date] : [];
-                    
-                    if (jamList.length === 0) {
-                        // MERAH: Tidak ada absen sama sekali
-                        bodyHTML += `<td class="p-2 border-r text-center align-middle bg-red-50/80 text-red-600 font-bold border-red-100">-</td>`;
-                    } else if (jamList.length === 1) {
-                        // KUNING: Hanya 1 absen
-                        const formattedBadge = `<span class="inline-block bg-amber-100 text-amber-900 font-semibold px-2 py-0.5 rounded border border-amber-300 text-[11px]">${jamList[0]}</span>`;
-                        bodyHTML += `<td class="p-2 border-r text-center align-top bg-amber-50/60 border-amber-100">${formattedBadge}</td>`;
+                    const analysis = analyzeJamList(jamList);
+
+                    if (analysis.status === 'EMPTY') {
+                        bodyHTML += `<td class="p-2 border-r text-center align-middle bg-red-50 text-red-600 font-bold border-red-100">-</td>`;
                     } else {
-                        // LENGKAP (>=2 scan): Indigo / Normal
-                        const formattedBadge = jamList.map(j => `<span class="inline-block bg-indigo-50 text-indigo-700 font-medium px-1.5 py-0.5 rounded border border-indigo-200 text-[11px] m-0.5">${j}</span>`).join(' ');
-                        bodyHTML += `<td class="p-2 border-r text-center align-top">${formattedBadge}</td>`;
+                        let badgesHTML = '';
+                        analysis.items.forEach(item => {
+                            let colorClass = '';
+                            if (item.color === 'emerald') colorClass = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+                            else if (item.color === 'amber') colorClass = 'bg-amber-100 text-amber-900 border-amber-300';
+                            else if (item.color === 'orange') colorClass = 'bg-orange-100 text-orange-900 border-orange-300';
+
+                            badgesHTML += `<span title="${item.label}" class="inline-block ${colorClass} font-semibold px-1.5 py-0.5 rounded border text-[11px] m-0.5">${item.time}</span>`;
+                        });
+
+                        bodyHTML += `<td class="p-2 border-r text-center align-top">${badgesHTML}</td>`;
                     }
                 });
 
@@ -264,7 +402,6 @@
             const excelRows = [];
             const rowHeights = [];
 
-            // 1. Header Kantor
             if (detectedOfficeName) {
                 excelRows.push([`KANTOR / INSTANSI: ${detectedOfficeName.toUpperCase()}`]);
                 rowHeights.push({ hpt: 20 });
@@ -272,7 +409,6 @@
                 rowHeights.push({ hpt: 10 });
             }
 
-            // 2. Baris Judul Tabel
             const headerRow = ["No", "Nama Pegawai"];
             filteredDates.forEach(date => {
                 const dParts = date.split('-');
@@ -284,7 +420,6 @@
 
             const startDataRowIndex = detectedOfficeName ? 3 : 1;
 
-            // 3. Isi Data Pegawai dan Jam Absen
             filteredEmployees.forEach((emp, index) => {
                 const row = [index + 1, emp];
                 let maxLinesInRow = 1;
@@ -305,11 +440,9 @@
                 rowHeights.push({ hpt: 18 + ((maxLinesInRow - 1) * 14) });
             });
 
-            // 4. Buat WorkSheet
             const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
             worksheet['!rows'] = rowHeights;
 
-            // 5. Styling Sel Excel (Baris Belang + Warna Merah/Kuning pada Sel Absen)
             const range = XLSX.utils.decode_range(worksheet['!ref']);
             for (let R = range.s.r; R <= range.e.r; ++R) {
                 const dataRowIdx = R - startDataRowIndex;
@@ -322,7 +455,6 @@
                     worksheet[cellAddress].t = 's';
                     if (!worksheet[cellAddress].s) worksheet[cellAddress].s = {};
 
-                    // Header Nama Kantor
                     if (detectedOfficeName && R === 0) {
                         worksheet[cellAddress].s = {
                             font: { bold: true, size: 12, color: { rgb: "1E293B" } },
@@ -331,7 +463,6 @@
                         continue;
                     }
 
-                    // Header Kolom Tabel
                     if (R === (startDataRowIndex - 1)) {
                         worksheet[cellAddress].s = {
                             font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -339,23 +470,35 @@
                             alignment: { horizontal: "center", vertical: "center", wrapText: true }
                         };
                     } else if (R >= startDataRowIndex) {
-                        // Warna dasar selang-seling (zebra striping) untuk kolom No & Nama
                         let cellFillColor = isEvenDataRow ? "FFFFFF" : "F8FAFC";
                         let fontColor = "0F172A";
                         let isBold = false;
 
-                        // Jika kolom tanggal (C >= 2)
                         if (C >= 2) {
-                            const val = (worksheet[cellAddress].v || '').toString();
-                            if (val === '-') {
-                                // MERAH: 0 Scan
-                                cellFillColor = "FEE2E2"; // Light Red
-                                fontColor = "DC2626";     // Red Text
+                            const dateIdx = C - 2;
+                            const date = filteredDates[dateIdx];
+                            const emp = filteredEmployees[dataRowIdx];
+                            const jamList = (groupedData[emp] && groupedData[emp][date]) ? groupedData[emp][date] : [];
+                            const analysis = analyzeJamList(jamList);
+
+                            if (analysis.status === 'EMPTY') {
+                                cellFillColor = "FEE2E2"; 
+                                fontColor = "DC2626";
                                 isBold = true;
-                            } else if (!val.includes('\n')) {
-                                // KUNING: 1 Scan saja (tidak ada newline)
-                                cellFillColor = "FEF3C7"; // Light Amber/Yellow
-                                fontColor = "92400E";     // Dark Amber Text
+                            } else {
+                                const hasOrange = analysis.items.some(i => i.color === 'orange');
+                                const hasAmber = analysis.items.some(i => i.color === 'amber');
+
+                                if (hasOrange) {
+                                    cellFillColor = "FFEDD5"; 
+                                    fontColor = "C2410C";
+                                } else if (hasAmber) {
+                                    cellFillColor = "FEF3C7"; 
+                                    fontColor = "92400E";
+                                } else {
+                                    cellFillColor = "D1FAE5"; 
+                                    fontColor = "065F46";
+                                }
                                 isBold = true;
                             }
                         }
@@ -373,12 +516,10 @@
                 }
             }
 
-            // Lebar Kolom
             const colWidths = [{ wch: 6 }, { wch: 25 }];
-            filteredDates.forEach(() => colWidths.push({ wch: 14 }));
+            filteredDates.forEach(() => colWidths.push({ wch: 15 }));
             worksheet['!cols'] = colWidths;
 
-            // 6. Simpan File Excel
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Absensi");
 
