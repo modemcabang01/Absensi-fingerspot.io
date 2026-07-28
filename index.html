@@ -52,32 +52,45 @@
 
             <!-- Form Pengaturan Jam Kerja -->
             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
-                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Pengaturan Jam Kerja Standar Kantor
-                    </h3>
-                    <label class="flex items-center gap-2 text-xs font-medium text-slate-700 bg-white px-2.5 py-1 rounded border border-slate-200 cursor-pointer hover:bg-slate-100 select-none">
-                        <input type="checkbox" id="useBreakLimit" onchange="toggleBreakInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
-                        <span>Aktifkan Batas Jam Istirahat</span>
-                    </label>
-                </div>
+                <h3 class="text-xs font-bold text-slate-700 uppercase mb-3 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Pengaturan Batas Jam Kerja Kantor
+                </h3>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">1. Jam Masuk</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- 1. Jam Masuk -->
+                    <div class="bg-white p-3 rounded-lg border border-slate-200">
+                        <label class="flex items-center justify-between mb-2 cursor-pointer select-none">
+                            <span class="text-[11px] font-bold text-slate-700">1. Jam Masuk</span>
+                            <input type="checkbox" id="useInLimit" checked onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        </label>
                         <input type="time" id="workIn" value="08:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">2. Mulai Istirahat</label>
+
+                    <!-- 2. Mulai Istirahat -->
+                    <div class="bg-white p-3 rounded-lg border border-slate-200">
+                        <label class="flex items-center justify-between mb-2 cursor-pointer select-none">
+                            <span class="text-[11px] font-bold text-slate-700">2. Mulai Istirahat</span>
+                            <input type="checkbox" id="useBreakStartLimit" onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        </label>
                         <input type="time" id="breakStart" value="12:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">3. Selesai Istirahat</label>
+
+                    <!-- 3. Selesai Istirahat -->
+                    <div class="bg-white p-3 rounded-lg border border-slate-200">
+                        <label class="flex items-center justify-between mb-2 cursor-pointer select-none">
+                            <span class="text-[11px] font-bold text-slate-700">3. Selesai Istirahat</span>
+                            <input type="checkbox" id="useBreakEndLimit" onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        </label>
                         <input type="time" id="breakEnd" value="13:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">4. Jam Pulang</label>
+
+                    <!-- 4. Jam Pulang -->
+                    <div class="bg-white p-3 rounded-lg border border-slate-200">
+                        <label class="flex items-center justify-between mb-2 cursor-pointer select-none">
+                            <span class="text-[11px] font-bold text-slate-700">4. Jam Pulang</span>
+                            <input type="checkbox" id="useOutLimit" checked onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        </label>
                         <input type="time" id="workOut" value="17:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
                     </div>
                 </div>
@@ -111,8 +124,8 @@
                 <!-- Legend Warna -->
                 <div class="flex flex-wrap items-center gap-2 text-[11px] bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                     <span class="font-semibold text-slate-600">Keterangan:</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Tepat Waktu / 1 Pasang Istirahat</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Terlambat / Pulang Awal / 1 Scan</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Sesuai / Tepat Waktu</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Terlambat / Pulang Awal</span>
                     <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block"></span> Istirahat Tidak Lengkap</span>
                     <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Tidak Ada Absen</span>
                 </div>
@@ -140,22 +153,24 @@
 
         document.getElementById('excelFile').addEventListener('change', handleFile, false);
 
-        function toggleBreakInputs() {
-            const useLimit = document.getElementById('useBreakLimit').checked;
-            const bStart = document.getElementById('breakStart');
-            const bEnd = document.getElementById('breakEnd');
+        function toggleInputs() {
+            const configs = [
+                { chk: 'useInLimit', input: 'workIn' },
+                { chk: 'useBreakStartLimit', input: 'breakStart' },
+                { chk: 'useBreakEndLimit', input: 'breakEnd' },
+                { chk: 'useOutLimit', input: 'workOut' }
+            ];
 
-            if (useLimit) {
-                bStart.disabled = false;
-                bEnd.disabled = false;
-                bStart.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
-                bEnd.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
-            } else {
-                bStart.disabled = true;
-                bEnd.disabled = true;
-                bStart.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
-                bEnd.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
-            }
+            configs.forEach(cfg => {
+                const isChecked = document.getElementById(cfg.chk).checked;
+                const inputEl = document.getElementById(cfg.input);
+                inputEl.disabled = !isChecked;
+                if (isChecked) {
+                    inputEl.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+                } else {
+                    inputEl.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+                }
+            });
         }
 
         function handleFile(e) {
@@ -249,12 +264,18 @@
             return { filteredDates, filteredEmployees };
         }
 
-        // Evaluasi Jam Kerja & Pewarnaan Sel
+        // Evaluasi Jam Kerja & Pewarnaan Sel Per Jam
         function analyzeJamList(jamList) {
+            const useInLimit = document.getElementById('useInLimit').checked;
             const wIn = document.getElementById('workIn').value || '08:00';
+
+            const useOutLimit = document.getElementById('useOutLimit').checked;
             const wOut = document.getElementById('workOut').value || '17:00';
-            const useBreakLimit = document.getElementById('useBreakLimit').checked;
+
+            const useBreakStartLimit = document.getElementById('useBreakStartLimit').checked;
             const bStart = document.getElementById('breakStart').value || '12:00';
+
+            const useBreakEndLimit = document.getElementById('useBreakEndLimit').checked;
             const bEnd = document.getElementById('breakEnd').value || '13:00';
 
             if (!jamList || jamList.length === 0) {
@@ -264,7 +285,7 @@
             // KONDISI 1 SCAN
             if (jamList.length === 1) {
                 const j = jamList[0];
-                const isMasukOk = j <= wIn;
+                const isMasukOk = !useInLimit || (j <= wIn);
                 return {
                     status: 'SINGLE',
                     items: [{
@@ -276,13 +297,13 @@
                 };
             }
 
-            // KONDISI 2 SCAN (Istirahat diabaikan)
+            // KONDISI 2 SCAN (Istirahat Diabaikan)
             if (jamList.length === 2) {
                 const j1 = jamList[0];
                 const j2 = jamList[1];
 
-                const isMasukOk = j1 <= wIn;
-                const isPulangOk = j2 >= wOut;
+                const isMasukOk = !useInLimit || (j1 <= wIn);
+                const isPulangOk = !useOutLimit || (j2 >= wOut);
 
                 return {
                     status: 'NO_BREAK',
@@ -298,32 +319,25 @@
             
             // 1. Scan Pertama = Jam Masuk
             const jFirst = jamList[0];
-            const isMasukOk = jFirst <= wIn;
+            const isMasukOk = !useInLimit || (jFirst <= wIn);
             resultItems.push({ time: jFirst, type: 'MASUK', color: isMasukOk ? 'emerald' : 'amber', label: isMasukOk ? 'Masuk' : 'Terlambat' });
 
             // 2. Scan Terakhir = Jam Pulang
             const jLast = jamList[jamList.length - 1];
-            const isPulangOk = jLast >= wOut;
+            const isPulangOk = !useOutLimit || (jLast >= wOut);
 
             // 3. Middle Scans = Jam Istirahat
             const middleScans = jamList.slice(1, jamList.length - 1);
 
             if (middleScans.length === 2) {
                 // Ada 1 Pasang Istirahat (2 Scan di tengah)
-                if (useBreakLimit) {
-                    // Jika dicentang: Periksa ketepatan batas jam istirahat
-                    const isBStartOk = middleScans[0] <= bStart;
-                    const isBEndOk = middleScans[1] >= bEnd;
+                const isBStartOk = !useBreakStartLimit || (middleScans[0] <= bStart);
+                const isBEndOk = !useBreakEndLimit || (middleScans[1] >= bEnd);
 
-                    resultItems.push({ time: middleScans[0], type: 'ISTIRAHAT', color: isBStartOk ? 'emerald' : 'amber', label: 'Mulai Istirahat' });
-                    resultItems.push({ time: middleScans[1], type: 'ISTIRAHAT', color: isBEndOk ? 'emerald' : 'amber', label: 'Selesai Istirahat' });
-                } else {
-                    // Jika TIDAK dicentang (Bebas): Asal 1 pasang -> HIJAU
-                    resultItems.push({ time: middleScans[0], type: 'ISTIRAHAT', color: 'emerald', label: 'Mulai Istirahat' });
-                    resultItems.push({ time: middleScans[1], type: 'ISTIRAHAT', color: 'emerald', label: 'Selesai Istirahat' });
-                }
+                resultItems.push({ time: middleScans[0], type: 'ISTIRAHAT', color: isBStartOk ? 'emerald' : 'amber', label: 'Mulai Istirahat' });
+                resultItems.push({ time: middleScans[1], type: 'ISTIRAHAT', color: isBEndOk ? 'emerald' : 'amber', label: 'Selesai Istirahat' });
             } else {
-                // Istirahat tidak 1 pasang (misal cuma 1 scan atau >2 scan) -> JINGGA / ORANGE
+                // Istirahat tidak 1 pasang (misal ganjil/1 scan saja) -> JINGGA / ORANGE
                 middleScans.forEach((jMid, idx) => {
                     resultItems.push({ time: jMid, type: 'ISTIRAHAT', color: 'orange', label: `Istirahat ${idx+1}` });
                 });
