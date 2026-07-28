@@ -203,7 +203,7 @@
                     <span class="font-semibold text-slate-600">Keterangan:</span>
                     <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Tepat Waktu (Sesuai Shift Terdekat)</span>
                     <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Terlambat / Pulang Awal</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block"></span> Istirahat Tidak Lengkap</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-fuchsia-500 inline-block"></span> Istirahat Tidak Lengkap (Magenta)</span>
                     <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Tidak Ada Absen</span>
                 </div>
             </div>
@@ -385,7 +385,6 @@
                 else if (type === 'BEND') refMin = timeToMinutes(s.bEnd);
 
                 let diff = Math.abs(targetMin - refMin);
-                // Handle kasus lewat tengah malam (24 jam = 1440 menit)
                 if (diff > 720) diff = 1440 - diff;
 
                 if (diff < minDiff) {
@@ -465,7 +464,8 @@
                 resultItems.push({ time: middleScans[1], type: 'ISTIRAHAT', color: isBEndOk ? 'emerald' : 'amber', label: `Selesai Istirahat (${shiftBEnd.name})` });
             } else {
                 middleScans.forEach((jMid, idx) => {
-                    resultItems.push({ time: jMid, type: 'ISTIRAHAT', color: 'orange', label: `Istirahat ${idx+1}` });
+                    // DIUBAH KE MAGENTA / FUCHSIA
+                    resultItems.push({ time: jMid, type: 'ISTIRAHAT', color: 'magenta', label: `Istirahat ${idx+1} (Tidak Lengkap)` });
                 });
             }
 
@@ -522,7 +522,8 @@
                             let colorClass = '';
                             if (item.color === 'emerald') colorClass = 'bg-emerald-100 text-emerald-900 border-emerald-300';
                             else if (item.color === 'amber') colorClass = 'bg-amber-100 text-amber-900 border-amber-300';
-                            else if (item.color === 'orange') colorClass = 'bg-orange-100 text-orange-900 border-orange-300';
+                            // DIUBAH KE MAGENTA / FUCHSIA
+                            else if (item.color === 'magenta') colorClass = 'bg-fuchsia-100 text-fuchsia-900 border-fuchsia-300';
 
                             badgesHTML += `<span title="${item.label}" class="inline-block ${colorClass} font-semibold px-1.5 py-0.5 rounded border text-[11px] m-0.5">${item.time}</span>`;
                         });
@@ -629,12 +630,13 @@
                                 fontColor = "DC2626";
                                 isBold = true;
                             } else {
-                                const hasOrange = analysis.items.some(i => i.color === 'orange');
+                                const hasMagenta = analysis.items.some(i => i.color === 'magenta');
                                 const hasAmber = analysis.items.some(i => i.color === 'amber');
 
-                                if (hasOrange) {
-                                    cellFillColor = "FFEDD5"; 
-                                    fontColor = "C2410C";
+                                if (hasMagenta) {
+                                    // SHADE MAGENTA / FUCHSIA DI EXCEL
+                                    cellFillColor = "FAE8FF"; 
+                                    fontColor = "86198F";
                                 } else if (hasAmber) {
                                     cellFillColor = "FEF3C7"; 
                                     fontColor = "92400E";
