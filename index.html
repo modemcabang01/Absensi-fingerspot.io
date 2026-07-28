@@ -50,48 +50,125 @@
                 </div>
             </div>
 
-            <!-- Form Pengaturan Jam Kerja -->
+            <!-- Form Pengaturan Jam Kerja Auto-Shift -->
             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
-                <h3 class="text-xs font-bold text-slate-700 uppercase mb-3 flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Pengaturan Batas Jam Kerja Kantor
-                </h3>
+                <div class="mb-4 border-b pb-2">
+                    <h3 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Acuan Shift Jam Kerja (Sistem Mencocokkan Otomatis ke Shift Terdekat)
+                    </h3>
+                </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <!-- 1. Jam Masuk -->
-                    <div class="bg-white p-3 rounded-lg border border-slate-200">
-                        <label class="flex items-center justify-between mb-2 cursor-pointer select-none">
-                            <span class="text-[11px] font-bold text-slate-700">1. Jam Masuk</span>
-                            <input type="checkbox" id="useInLimit" checked onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
-                        </label>
-                        <input type="time" id="workIn" value="08:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
+                <div class="space-y-4">
+                    <!-- SHIFT 1 -->
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-indigo-700 mb-2.5 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-indigo-600 inline-block"></span> SHIFT 1 (Pagi / Normal)
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Jam Masuk</span>
+                                    <input type="checkbox" id="s1_useIn" checked onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s1_wIn" value="08:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Mulai Istirahat</span>
+                                    <input type="checkbox" id="s1_useBStart" onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s1_bStart" value="12:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Selesai Istirahat</span>
+                                    <input type="checkbox" id="s1_useBEnd" onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s1_bEnd" value="13:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Jam Pulang</span>
+                                    <input type="checkbox" id="s1_useOut" checked onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s1_wOut" value="17:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- 2. Mulai Istirahat -->
-                    <div class="bg-white p-3 rounded-lg border border-slate-200">
-                        <label class="flex items-center justify-between mb-2 cursor-pointer select-none">
-                            <span class="text-[11px] font-bold text-slate-700">2. Mulai Istirahat</span>
-                            <input type="checkbox" id="useBreakStartLimit" onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
-                        </label>
-                        <input type="time" id="breakStart" value="12:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
+                    <!-- SHIFT 2 -->
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-emerald-700 mb-2.5 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-600 inline-block"></span> SHIFT 2 (Siang / Sore)
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Jam Masuk</span>
+                                    <input type="checkbox" id="s2_useIn" checked onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s2_wIn" value="13:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Mulai Istirahat</span>
+                                    <input type="checkbox" id="s2_useBStart" onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s2_bStart" value="17:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Selesai Istirahat</span>
+                                    <input type="checkbox" id="s2_useBEnd" onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s2_bEnd" value="18:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Jam Pulang</span>
+                                    <input type="checkbox" id="s2_useOut" checked onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s2_wOut" value="21:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- 3. Selesai Istirahat -->
-                    <div class="bg-white p-3 rounded-lg border border-slate-200">
-                        <label class="flex items-center justify-between mb-2 cursor-pointer select-none">
-                            <span class="text-[11px] font-bold text-slate-700">3. Selesai Istirahat</span>
-                            <input type="checkbox" id="useBreakEndLimit" onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
-                        </label>
-                        <input type="time" id="breakEnd" value="13:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
-                    </div>
-
-                    <!-- 4. Jam Pulang -->
-                    <div class="bg-white p-3 rounded-lg border border-slate-200">
-                        <label class="flex items-center justify-between mb-2 cursor-pointer select-none">
-                            <span class="text-[11px] font-bold text-slate-700">4. Jam Pulang</span>
-                            <input type="checkbox" id="useOutLimit" checked onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
-                        </label>
-                        <input type="time" id="workOut" value="17:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
+                    <!-- SHIFT 3 -->
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-amber-700 mb-2.5 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-amber-600 inline-block"></span> SHIFT 3 (Malam)
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Jam Masuk</span>
+                                    <input type="checkbox" id="s3_useIn" checked onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s3_wIn" value="21:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Mulai Istirahat</span>
+                                    <input type="checkbox" id="s3_useBStart" onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s3_bStart" value="01:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Selesai Istirahat</span>
+                                    <input type="checkbox" id="s3_useBEnd" onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s3_bEnd" value="02:00" disabled onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs font-mono bg-slate-100 text-slate-400 cursor-not-allowed">
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <label class="flex items-center justify-between mb-1.5 cursor-pointer select-none">
+                                    <span class="text-[11px] font-bold text-slate-700">Jam Pulang</span>
+                                    <input type="checkbox" id="s3_useOut" checked onchange="toggleInputs(); renderTable();" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                </label>
+                                <input type="time" id="s3_wOut" value="05:00" onchange="renderTable()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-indigo-500 font-mono">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -124,7 +201,7 @@
                 <!-- Legend Warna -->
                 <div class="flex flex-wrap items-center gap-2 text-[11px] bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                     <span class="font-semibold text-slate-600">Keterangan:</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Sesuai / Tepat Waktu</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Tepat Waktu (Sesuai Shift Terdekat)</span>
                     <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Terlambat / Pulang Awal</span>
                     <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block"></span> Istirahat Tidak Lengkap</span>
                     <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Tidak Ada Absen</span>
@@ -154,23 +231,28 @@
         document.getElementById('excelFile').addEventListener('change', handleFile, false);
 
         function toggleInputs() {
-            const configs = [
-                { chk: 'useInLimit', input: 'workIn' },
-                { chk: 'useBreakStartLimit', input: 'breakStart' },
-                { chk: 'useBreakEndLimit', input: 'breakEnd' },
-                { chk: 'useOutLimit', input: 'workOut' }
-            ];
+            for (let s = 1; s <= 3; s++) {
+                const configs = [
+                    { chk: `s${s}_useIn`, input: `s${s}_wIn` },
+                    { chk: `s${s}_useBStart`, input: `s${s}_bStart` },
+                    { chk: `s${s}_useBEnd`, input: `s${s}_bEnd` },
+                    { chk: `s${s}_useOut`, input: `s${s}_wOut` }
+                ];
 
-            configs.forEach(cfg => {
-                const isChecked = document.getElementById(cfg.chk).checked;
-                const inputEl = document.getElementById(cfg.input);
-                inputEl.disabled = !isChecked;
-                if (isChecked) {
-                    inputEl.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
-                } else {
-                    inputEl.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
-                }
-            });
+                configs.forEach(cfg => {
+                    const chkEl = document.getElementById(cfg.chk);
+                    const inputEl = document.getElementById(cfg.input);
+                    if (chkEl && inputEl) {
+                        const isChecked = chkEl.checked;
+                        inputEl.disabled = !isChecked;
+                        if (isChecked) {
+                            inputEl.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+                        } else {
+                            inputEl.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+                        }
+                    }
+                });
+            }
         }
 
         function handleFile(e) {
@@ -264,87 +346,134 @@
             return { filteredDates, filteredEmployees };
         }
 
-        // Evaluasi Jam Kerja & Pewarnaan Sel Per Jam
+        // Helper Konversi Jam HH:MM ke Menit
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const [h, m] = timeStr.split(':').map(Number);
+            return (h * 60) + (m || 0);
+        }
+
+        function getAllShifts() {
+            const shifts = [];
+            for (let s = 1; s <= 3; s++) {
+                shifts.push({
+                    name: `Shift ${s}`,
+                    useIn: document.getElementById(`s${s}_useIn`).checked,
+                    wIn: document.getElementById(`s${s}_wIn`).value || '08:00',
+                    useBStart: document.getElementById(`s${s}_useBStart`).checked,
+                    bStart: document.getElementById(`s${s}_bStart`).value || '12:00',
+                    useBEnd: document.getElementById(`s${s}_useBEnd`).checked,
+                    bEnd: document.getElementById(`s${s}_bEnd`).value || '13:00',
+                    useOut: document.getElementById(`s${s}_useOut`).checked,
+                    wOut: document.getElementById(`s${s}_wOut`).value || '17:00'
+                });
+            }
+            return shifts;
+        }
+
+        // Cari Shift Yang Paling Mendekati Jam Scan Masuk/Pulang
+        function findClosestShift(type, timeStr, shifts) {
+            const targetMin = timeToMinutes(timeStr);
+            let closestShift = shifts[0];
+            let minDiff = Infinity;
+
+            shifts.forEach(s => {
+                let refMin = 0;
+                if (type === 'IN') refMin = timeToMinutes(s.wIn);
+                else if (type === 'OUT') refMin = timeToMinutes(s.wOut);
+                else if (type === 'BSTART') refMin = timeToMinutes(s.bStart);
+                else if (type === 'BEND') refMin = timeToMinutes(s.bEnd);
+
+                let diff = Math.abs(targetMin - refMin);
+                // Handle kasus lewat tengah malam (24 jam = 1440 menit)
+                if (diff > 720) diff = 1440 - diff;
+
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestShift = s;
+                }
+            });
+
+            return closestShift;
+        }
+
+        // Evaluasi Jam Kerja Otomatis Menghitung Shift Terdekat
         function analyzeJamList(jamList) {
-            const useInLimit = document.getElementById('useInLimit').checked;
-            const wIn = document.getElementById('workIn').value || '08:00';
-
-            const useOutLimit = document.getElementById('useOutLimit').checked;
-            const wOut = document.getElementById('workOut').value || '17:00';
-
-            const useBreakStartLimit = document.getElementById('useBreakStartLimit').checked;
-            const bStart = document.getElementById('breakStart').value || '12:00';
-
-            const useBreakEndLimit = document.getElementById('useBreakEndLimit').checked;
-            const bEnd = document.getElementById('breakEnd').value || '13:00';
-
             if (!jamList || jamList.length === 0) {
                 return { status: 'EMPTY', items: [] };
             }
 
-            // KONDISI 1 SCAN
+            const shifts = getAllShifts();
+
+            // KONDISI 1 SCAN (Jam Masuk)
             if (jamList.length === 1) {
                 const j = jamList[0];
-                const isMasukOk = !useInLimit || (j <= wIn);
+                const shift = findClosestShift('IN', j, shifts);
+                const isMasukOk = !shift.useIn || (j <= shift.wIn);
+
                 return {
                     status: 'SINGLE',
                     items: [{
                         time: j,
                         type: 'MASUK',
                         color: isMasukOk ? 'emerald' : 'amber',
-                        label: isMasukOk ? 'Masuk' : 'Terlambat'
+                        label: isMasukOk ? `Masuk Sesuai (${shift.name})` : `Terlambat (${shift.name})`
                     }]
                 };
             }
 
-            // KONDISI 2 SCAN (Istirahat Diabaikan)
+            // KONDISI 2 SCAN (Masuk & Pulang)
             if (jamList.length === 2) {
                 const j1 = jamList[0];
                 const j2 = jamList[1];
 
-                const isMasukOk = !useInLimit || (j1 <= wIn);
-                const isPulangOk = !useOutLimit || (j2 >= wOut);
+                const shiftIn = findClosestShift('IN', j1, shifts);
+                const shiftOut = findClosestShift('OUT', j2, shifts);
+
+                const isMasukOk = !shiftIn.useIn || (j1 <= shiftIn.wIn);
+                const isPulangOk = !shiftOut.useOut || (j2 >= shiftOut.wOut);
 
                 return {
                     status: 'NO_BREAK',
                     items: [
-                        { time: j1, type: 'MASUK', color: isMasukOk ? 'emerald' : 'amber', label: isMasukOk ? 'Masuk' : 'Terlambat' },
-                        { time: j2, type: 'PULANG', color: isPulangOk ? 'emerald' : 'amber', label: isPulangOk ? 'Pulang' : 'Pulang Awal' }
+                        { time: j1, type: 'MASUK', color: isMasukOk ? 'emerald' : 'amber', label: isMasukOk ? `Masuk Sesuai (${shiftIn.name})` : `Terlambat (${shiftIn.name})` },
+                        { time: j2, type: 'PULANG', color: isPulangOk ? 'emerald' : 'amber', label: isPulangOk ? `Pulang Sesuai (${shiftOut.name})` : `Pulang Awal (${shiftOut.name})` }
                     ]
                 };
             }
 
-            // KONDISI 3 ATAU LEBIH SCAN
+            // KONDISI 3 ATAU LEBIH SCAN (Termasuk Istirahat)
             const resultItems = [];
             
-            // 1. Scan Pertama = Jam Masuk
+            // 1. Jam Masuk
             const jFirst = jamList[0];
-            const isMasukOk = !useInLimit || (jFirst <= wIn);
-            resultItems.push({ time: jFirst, type: 'MASUK', color: isMasukOk ? 'emerald' : 'amber', label: isMasukOk ? 'Masuk' : 'Terlambat' });
+            const shiftIn = findClosestShift('IN', jFirst, shifts);
+            const isMasukOk = !shiftIn.useIn || (jFirst <= shiftIn.wIn);
+            resultItems.push({ time: jFirst, type: 'MASUK', color: isMasukOk ? 'emerald' : 'amber', label: isMasukOk ? `Masuk Sesuai (${shiftIn.name})` : `Terlambat (${shiftIn.name})` });
 
-            // 2. Scan Terakhir = Jam Pulang
-            const jLast = jamList[jamList.length - 1];
-            const isPulangOk = !useOutLimit || (jLast >= wOut);
-
-            // 3. Middle Scans = Jam Istirahat
+            // 2. Middle Scans = Jam Istirahat
             const middleScans = jamList.slice(1, jamList.length - 1);
 
             if (middleScans.length === 2) {
-                // Ada 1 Pasang Istirahat (2 Scan di tengah)
-                const isBStartOk = !useBreakStartLimit || (middleScans[0] <= bStart);
-                const isBEndOk = !useBreakEndLimit || (middleScans[1] >= bEnd);
+                const shiftBStart = findClosestShift('BSTART', middleScans[0], shifts);
+                const shiftBEnd = findClosestShift('BEND', middleScans[1], shifts);
 
-                resultItems.push({ time: middleScans[0], type: 'ISTIRAHAT', color: isBStartOk ? 'emerald' : 'amber', label: 'Mulai Istirahat' });
-                resultItems.push({ time: middleScans[1], type: 'ISTIRAHAT', color: isBEndOk ? 'emerald' : 'amber', label: 'Selesai Istirahat' });
+                const isBStartOk = !shiftBStart.useBStart || (middleScans[0] <= shiftBStart.bStart);
+                const isBEndOk = !shiftBEnd.useBEnd || (middleScans[1] >= shiftBEnd.bEnd);
+
+                resultItems.push({ time: middleScans[0], type: 'ISTIRAHAT', color: isBStartOk ? 'emerald' : 'amber', label: `Mulai Istirahat (${shiftBStart.name})` });
+                resultItems.push({ time: middleScans[1], type: 'ISTIRAHAT', color: isBEndOk ? 'emerald' : 'amber', label: `Selesai Istirahat (${shiftBEnd.name})` });
             } else {
-                // Istirahat tidak 1 pasang (misal ganjil/1 scan saja) -> JINGGA / ORANGE
                 middleScans.forEach((jMid, idx) => {
                     resultItems.push({ time: jMid, type: 'ISTIRAHAT', color: 'orange', label: `Istirahat ${idx+1}` });
                 });
             }
 
-            // Tambahkan Jam Pulang di Akhir
-            resultItems.push({ time: jLast, type: 'PULANG', color: isPulangOk ? 'emerald' : 'amber', label: isPulangOk ? 'Pulang' : 'Pulang Awal' });
+            // 3. Jam Pulang
+            const jLast = jamList[jamList.length - 1];
+            const shiftOut = findClosestShift('OUT', jLast, shifts);
+            const isPulangOk = !shiftOut.useOut || (jLast >= shiftOut.wOut);
+            resultItems.push({ time: jLast, type: 'PULANG', color: isPulangOk ? 'emerald' : 'amber', label: isPulangOk ? `Pulang Sesuai (${shiftOut.name})` : `Pulang Awal (${shiftOut.name})` });
 
             return { status: 'FULL', items: resultItems };
         }
