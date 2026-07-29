@@ -513,7 +513,8 @@
             // Kolom Tambahan Ringkasan
             headerHTML += `<th class="p-3 border-r border-slate-700 text-center min-w-[110px] bg-emerald-900 text-emerald-100">Absensi Lengkap</th>`;
             headerHTML += `<th class="p-3 border-r border-slate-700 text-center min-w-[110px] bg-amber-900 text-amber-100">Telat / Pulang Cepat</th>`;
-            headerHTML += `<th class="p-3 text-center min-w-[110px] bg-fuchsia-900 text-fuchsia-100">Istirahat Tdk Lengkap</th>`;
+            headerHTML += `<th class="p-3 border-r border-slate-700 text-center min-w-[110px] bg-fuchsia-900 text-fuchsia-100">Istirahat Tdk Lengkap</th>`;
+            headerHTML += `<th class="p-3 text-center min-w-[110px] bg-red-900 text-red-100">Tidak Ada Absen</th>`;
 
             headerHTML += `</tr>`;
             thead.innerHTML = headerHTML;
@@ -530,6 +531,7 @@
                 let countEmerald = 0;
                 let countAmber = 0;
                 let countMagenta = 0;
+                let countEmpty = 0;
 
                 let rowCellsHTML = '';
 
@@ -541,6 +543,7 @@
                     if (status === 'EMERALD') countEmerald++;
                     else if (status === 'AMBER') countAmber++;
                     else if (status === 'MAGENTA') countMagenta++;
+                    else if (status === 'EMPTY') countEmpty++;
 
                     if (analysis.status === 'EMPTY') {
                         rowCellsHTML += `<td class="p-2 border-r text-center align-middle bg-red-50 text-red-600 font-bold border-red-100">-</td>`;
@@ -565,7 +568,8 @@
                     ${rowCellsHTML}
                     <td class="p-2.5 border-r text-center font-bold text-emerald-700 bg-emerald-50/50">${countEmerald}</td>
                     <td class="p-2.5 border-r text-center font-bold text-amber-700 bg-amber-50/50">${countAmber}</td>
-                    <td class="p-2.5 text-center font-bold text-fuchsia-700 bg-fuchsia-50/50">${countMagenta}</td>
+                    <td class="p-2.5 border-r text-center font-bold text-fuchsia-700 bg-fuchsia-50/50">${countMagenta}</td>
+                    <td class="p-2.5 text-center font-bold text-red-700 bg-red-50/50">${countEmpty}</td>
                 </tr>`;
             });
 
@@ -611,7 +615,7 @@
             filteredDates.forEach(date => {
                 headerRow.push(formatDateIndo(date));
             });
-            headerRow.push("Absensi Lengkap", "Telat / Pulang Cepat", "Istirahat Tdk Lengkap");
+            headerRow.push("Absensi Lengkap", "Telat / Pulang Cepat", "Istirahat Tdk Lengkap", "Tidak Ada Absen");
             
             excelRows.push(headerRow);
             rowHeights.push({ hpt: 25 });
@@ -625,6 +629,7 @@
                 let countEmerald = 0;
                 let countAmber = 0;
                 let countMagenta = 0;
+                let countEmpty = 0;
 
                 filteredDates.forEach(date => {
                     const jamList = (groupedData[emp] && groupedData[emp][date]) ? groupedData[emp][date] : [];
@@ -634,6 +639,7 @@
                     if (status === 'EMERALD') countEmerald++;
                     else if (status === 'AMBER') countAmber++;
                     else if (status === 'MAGENTA') countMagenta++;
+                    else if (status === 'EMPTY') countEmpty++;
 
                     if (jamList.length > 0) {
                         row.push(jamList.join('\n'));
@@ -645,8 +651,8 @@
                     }
                 });
 
-                // Tambahkan 3 kolom ringkasan di paling kanan
-                row.push(countEmerald, countAmber, countMagenta);
+                // Tambahkan 4 kolom ringkasan di paling kanan
+                row.push(countEmerald, countAmber, countMagenta, countEmpty);
 
                 excelRows.push(row);
                 rowHeights.push({ hpt: Math.max(22, 18 + ((maxLinesInRow - 1) * 14)) });
@@ -684,10 +690,11 @@
                         worksheet[cellAddress].t = 's';
                         let bgHeader = "1E293B"; // Dark Slate default
                         
-                        // Warna khusus header 3 kolom tambahan
-                        if (C === totalCols - 3) bgHeader = "065F46"; // Dark Emerald
-                        else if (C === totalCols - 2) bgHeader = "92400E"; // Dark Amber
-                        else if (C === totalCols - 1) bgHeader = "86198F"; // Dark Fuchsia
+                        // Warna khusus header 4 kolom tambahan
+                        if (C === totalCols - 4) bgHeader = "065F46"; // Dark Emerald
+                        else if (C === totalCols - 3) bgHeader = "92400E"; // Dark Amber
+                        else if (C === totalCols - 2) bgHeader = "86198F"; // Dark Fuchsia
+                        else if (C === totalCols - 1) bgHeader = "991B1B"; // Dark Red
 
                         worksheet[cellAddress].s = {
                             font: { bold: true, color: { rgb: "FFFFFF" }, size: 10 },
@@ -702,7 +709,7 @@
                         let isBold = false;
 
                         // Kolom Tanggal Absensi
-                        if (C >= 2 && C < totalCols - 3) {
+                        if (C >= 2 && C < totalCols - 4) {
                             const dateIdx = C - 2;
                             const date = filteredDates[dateIdx];
                             const emp = filteredEmployees[dataRowIdx];
@@ -730,19 +737,22 @@
                                 isBold = true;
                             }
                         } 
-                        // 3 Kolom Ringkasan di Excel
-                        else if (C >= totalCols - 3) {
+                        // 4 Kolom Ringkasan di Excel
+                        else if (C >= totalCols - 4) {
                             worksheet[cellAddress].t = 'n'; // Numeric
                             isBold = true;
-                            if (C === totalCols - 3) {
+                            if (C === totalCols - 4) {
                                 cellFillColor = "ECFDF5";
                                 fontColor = "047857";
-                            } else if (C === totalCols - 2) {
+                            } else if (C === totalCols - 3) {
                                 cellFillColor = "FFFBEB";
                                 fontColor = "B45309";
-                            } else if (C === totalCols - 1) {
+                            } else if (C === totalCols - 2) {
                                 cellFillColor = "FDF4FF";
                                 fontColor = "A21CAF";
+                            } else if (C === totalCols - 1) {
+                                cellFillColor = "FEF2F2";
+                                fontColor = "991B1B";
                             }
                         } else {
                             worksheet[cellAddress].t = (C === 0) ? 'n' : 's';
@@ -753,7 +763,7 @@
                             fill: { fgColor: { rgb: cellFillColor } },
                             alignment: { 
                                 horizontal: C >= 2 ? "center" : (C === 0 ? "center" : "left"), 
-                                vertical: (C >= 2 && C < totalCols - 3 && worksheet[cellAddress].v === '-') ? "center" : "top", 
+                                vertical: (C >= 2 && C < totalCols - 4 && worksheet[cellAddress].v === '-') ? "center" : "top", 
                                 wrapText: true 
                             }
                         };
@@ -764,7 +774,7 @@
             // Lebar Kolom Excel
             const colWidths = [{ wch: 6 }, { wch: 25 }];
             filteredDates.forEach(() => colWidths.push({ wch: 15 }));
-            colWidths.push({ wch: 18 }, { wch: 20 }, { wch: 22 }); // 3 Kolom Ringkasan
+            colWidths.push({ wch: 18 }, { wch: 20 }, { wch: 22 }, { wch: 18 }); // 4 Kolom Ringkasan
             worksheet['!cols'] = colWidths;
 
             const workbook = XLSX.utils.book_new();
