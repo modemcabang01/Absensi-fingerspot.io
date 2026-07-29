@@ -464,7 +464,6 @@
                 resultItems.push({ time: middleScans[1], type: 'ISTIRAHAT', color: isBEndOk ? 'emerald' : 'amber', label: `Selesai Istirahat (${shiftBEnd.name})` });
             } else {
                 middleScans.forEach((jMid, idx) => {
-                    // DIUBAH KE MAGENTA / FUCHSIA
                     resultItems.push({ time: jMid, type: 'ISTIRAHAT', color: 'magenta', label: `Istirahat ${idx+1} (Tidak Lengkap)` });
                 });
             }
@@ -476,6 +475,22 @@
             resultItems.push({ time: jLast, type: 'PULANG', color: isPulangOk ? 'emerald' : 'amber', label: isPulangOk ? `Pulang Sesuai (${shiftOut.name})` : `Pulang Awal (${shiftOut.name})` });
 
             return { status: 'FULL', items: resultItems };
+        }
+
+        // Helper untuk menghitung status warna dalam 1 tanggal/cell
+        function getCellStatus(analysis) {
+            if (analysis.status === 'EMPTY') return 'EMPTY';
+            
+            const hasMagenta = analysis.items.some(i => i.color === 'magenta');
+            if (hasMagenta) return 'MAGENTA';
+            
+            const hasAmber = analysis.items.some(i => i.color === 'amber');
+            if (hasAmber) return 'AMBER';
+            
+            const allEmerald = analysis.items.length > 0 && analysis.items.every(i => i.color === 'emerald');
+            if (allEmerald) return 'EMERALD';
+            
+            return 'OTHER';
         }
 
         function renderTable() {
@@ -494,6 +509,12 @@
                 const displayDate = dParts.length === 3 ? `${dParts[2]}/${dParts[1]}` : date;
                 headerHTML += `<th class="p-3 border-r border-slate-700 text-center min-w-[120px]">${displayDate}</th>`;
             });
+
+            // Kolom Tambahan Ringkasan
+            headerHTML += `<th class="p-3 border-r border-slate-700 text-center min-w-[110px] bg-emerald-900 text-emerald-100">Absensi Lengkap</th>`;
+            headerHTML += `<th class="p-3 border-r border-slate-700 text-center min-w-[110px] bg-amber-900 text-amber-100">Telat / Pulang Cepat</th>`;
+            headerHTML += `<th class="p-3 text-center min-w-[110px] bg-fuchsia-900 text-fuchsia-100">Istirahat Tdk Lengkap</th>`;
+
             headerHTML += `</tr>`;
             thead.innerHTML = headerHTML;
 
@@ -506,37 +527,58 @@
                 const rowBgClass = isEven ? 'bg-white' : 'bg-slate-50';
                 const stickyBgClass = isEven ? 'bg-white' : 'bg-slate-100';
 
-                bodyHTML += `<tr class="${rowBgClass} hover:bg-indigo-50/40 border-b transition-colors">
-                    <td class="p-2.5 border-r text-center font-medium sticky-col-left ${stickyBgClass}">${index + 1}</td>
-                    <td class="p-2.5 border-r font-semibold text-slate-800 sticky-col-left ${stickyBgClass}" style="left: 50px;">${emp}</td>`;
-                
+                let countEmerald = 0;
+                let countAmber = 0;
+                let countMagenta = 0;
+
+                let rowCellsHTML = '';
+
                 filteredDates.forEach(date => {
                     const jamList = (groupedData[emp] && groupedData[emp][date]) ? groupedData[emp][date] : [];
                     const analysis = analyzeJamList(jamList);
+                    const status = getCellStatus(analysis);
+
+                    if (status === 'EMERALD') countEmerald++;
+                    else if (status === 'AMBER') countAmber++;
+                    else if (status === 'MAGENTA') countMagenta++;
 
                     if (analysis.status === 'EMPTY') {
-                        bodyHTML += `<td class="p-2 border-r text-center align-middle bg-red-50 text-red-600 font-bold border-red-100">-</td>`;
+                        rowCellsHTML += `<td class="p-2 border-r text-center align-middle bg-red-50 text-red-600 font-bold border-red-100">-</td>`;
                     } else {
                         let badgesHTML = '';
                         analysis.items.forEach(item => {
                             let colorClass = '';
                             if (item.color === 'emerald') colorClass = 'bg-emerald-100 text-emerald-900 border-emerald-300';
                             else if (item.color === 'amber') colorClass = 'bg-amber-100 text-amber-900 border-amber-300';
-                            // DIUBAH KE MAGENTA / FUCHSIA
                             else if (item.color === 'magenta') colorClass = 'bg-fuchsia-100 text-fuchsia-900 border-fuchsia-300';
 
                             badgesHTML += `<span title="${item.label}" class="inline-block ${colorClass} font-semibold px-1.5 py-0.5 rounded border text-[11px] m-0.5">${item.time}</span>`;
                         });
 
-                        bodyHTML += `<td class="p-2 border-r text-center align-top">${badgesHTML}</td>`;
+                        rowCellsHTML += `<td class="p-2 border-r text-center align-top">${badgesHTML}</td>`;
                     }
                 });
 
-                bodyHTML += `</tr>`;
+                bodyHTML += `<tr class="${rowBgClass} hover:bg-indigo-50/40 border-b transition-colors">
+                    <td class="p-2.5 border-r text-center font-medium sticky-col-left ${stickyBgClass}">${index + 1}</td>
+                    <td class="p-2.5 border-r font-semibold text-slate-800 sticky-col-left ${stickyBgClass}" style="left: 50px;">${emp}</td>
+                    ${rowCellsHTML}
+                    <td class="p-2.5 border-r text-center font-bold text-emerald-700 bg-emerald-50/50">${countEmerald}</td>
+                    <td class="p-2.5 border-r text-center font-bold text-amber-700 bg-amber-50/50">${countAmber}</td>
+                    <td class="p-2.5 text-center font-bold text-fuchsia-700 bg-fuchsia-50/50">${countMagenta}</td>
+                </tr>`;
             });
 
             tbody.innerHTML = bodyHTML;
             document.getElementById('summaryText').innerText = `Menampilkan ${filteredEmployees.length} pegawai untuk periode (${filteredDates.length} hari)`;
+        }
+
+        // Helper Format Tanggal ke DD/MM/YYYY
+        function formatDateIndo(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            return dateStr;
         }
 
         // Fitur Export Excel
@@ -546,30 +588,53 @@
             const excelRows = [];
             const rowHeights = [];
 
+            // 1. Header Nama Kantor/Instansi (jika ada)
             if (detectedOfficeName) {
                 excelRows.push([`KANTOR / INSTANSI: ${detectedOfficeName.toUpperCase()}`]);
                 rowHeights.push({ hpt: 20 });
-                excelRows.push([]); 
-                rowHeights.push({ hpt: 10 });
             }
 
+            // 2. Header Tanggal Awal dan Tanggal Akhir
+            const startDateVal = document.getElementById('startDate').value;
+            const endDateVal = document.getElementById('endDate').value;
+            const periodeStr = `PERIODE ABSENSI: ${formatDateIndo(startDateVal)} s/d ${formatDateIndo(endDateVal)}`;
+            
+            excelRows.push([periodeStr]);
+            rowHeights.push({ hpt: 20 });
+
+            // Baris Kosong Pemisah
+            excelRows.push([]); 
+            rowHeights.push({ hpt: 10 });
+
+            // 3. Header Tabel
             const headerRow = ["No", "Nama Pegawai"];
             filteredDates.forEach(date => {
-                const dParts = date.split('-');
-                const displayDate = dParts.length === 3 ? `${dParts[2]}/${dParts[1]}/${dParts[0]}` : date;
-                headerRow.push(displayDate);
+                headerRow.push(formatDateIndo(date));
             });
+            headerRow.push("Absensi Lengkap", "Telat / Pulang Cepat", "Istirahat Tdk Lengkap");
+            
             excelRows.push(headerRow);
             rowHeights.push({ hpt: 25 });
 
-            const startDataRowIndex = detectedOfficeName ? 3 : 1;
+            const startDataRowIndex = excelRows.length; // Indeks baris pertama data di Excel
 
             filteredEmployees.forEach((emp, index) => {
                 const row = [index + 1, emp];
                 let maxLinesInRow = 1;
 
+                let countEmerald = 0;
+                let countAmber = 0;
+                let countMagenta = 0;
+
                 filteredDates.forEach(date => {
                     const jamList = (groupedData[emp] && groupedData[emp][date]) ? groupedData[emp][date] : [];
+                    const analysis = analyzeJamList(jamList);
+                    const status = getCellStatus(analysis);
+
+                    if (status === 'EMERALD') countEmerald++;
+                    else if (status === 'AMBER') countAmber++;
+                    else if (status === 'MAGENTA') countMagenta++;
+
                     if (jamList.length > 0) {
                         row.push(jamList.join('\n'));
                         if (jamList.length > maxLinesInRow) {
@@ -580,12 +645,18 @@
                     }
                 });
 
+                // Tambahkan 3 kolom ringkasan di paling kanan
+                row.push(countEmerald, countAmber, countMagenta);
+
                 excelRows.push(row);
-                rowHeights.push({ hpt: 18 + ((maxLinesInRow - 1) * 14) });
+                rowHeights.push({ hpt: Math.max(22, 18 + ((maxLinesInRow - 1) * 14)) });
             });
 
             const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
             worksheet['!rows'] = rowHeights;
+
+            const totalCols = headerRow.length;
+            const headerTableIdx = startDataRowIndex - 1;
 
             const range = XLSX.utils.decode_range(worksheet['!ref']);
             for (let R = range.s.r; R <= range.e.r; ++R) {
@@ -596,29 +667,42 @@
                     const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
                     if (!worksheet[cellAddress]) continue;
 
-                    worksheet[cellAddress].t = 's';
                     if (!worksheet[cellAddress].s) worksheet[cellAddress].s = {};
 
-                    if (detectedOfficeName && R === 0) {
+                    // Styling Header Atas (Kantor & Periode Tanggal)
+                    if (R < headerTableIdx) {
+                        worksheet[cellAddress].t = 's';
                         worksheet[cellAddress].s = {
-                            font: { bold: true, size: 12, color: { rgb: "1E293B" } },
+                            font: { bold: true, size: 11, color: { rgb: "1E293B" } },
                             alignment: { horizontal: "left", vertical: "center" }
                         };
                         continue;
                     }
 
-                    if (R === (startDataRowIndex - 1)) {
+                    // Styling Header Tabel
+                    if (R === headerTableIdx) {
+                        worksheet[cellAddress].t = 's';
+                        let bgHeader = "1E293B"; // Dark Slate default
+                        
+                        // Warna khusus header 3 kolom tambahan
+                        if (C === totalCols - 3) bgHeader = "065F46"; // Dark Emerald
+                        else if (C === totalCols - 2) bgHeader = "92400E"; // Dark Amber
+                        else if (C === totalCols - 1) bgHeader = "86198F"; // Dark Fuchsia
+
                         worksheet[cellAddress].s = {
-                            font: { bold: true, color: { rgb: "FFFFFF" } },
-                            fill: { fgColor: { rgb: "1E293B" } },
+                            font: { bold: true, color: { rgb: "FFFFFF" }, size: 10 },
+                            fill: { fgColor: { rgb: bgHeader } },
                             alignment: { horizontal: "center", vertical: "center", wrapText: true }
                         };
-                    } else if (R >= startDataRowIndex) {
+                    } 
+                    // Styling Baris Data
+                    else if (R >= startDataRowIndex) {
                         let cellFillColor = isEvenDataRow ? "FFFFFF" : "F8FAFC";
                         let fontColor = "0F172A";
                         let isBold = false;
 
-                        if (C >= 2) {
+                        // Kolom Tanggal Absensi
+                        if (C >= 2 && C < totalCols - 3) {
                             const dateIdx = C - 2;
                             const date = filteredDates[dateIdx];
                             const emp = filteredEmployees[dataRowIdx];
@@ -634,7 +718,6 @@
                                 const hasAmber = analysis.items.some(i => i.color === 'amber');
 
                                 if (hasMagenta) {
-                                    // SHADE MAGENTA / FUCHSIA DI EXCEL
                                     cellFillColor = "FAE8FF"; 
                                     fontColor = "86198F";
                                 } else if (hasAmber) {
@@ -646,6 +729,23 @@
                                 }
                                 isBold = true;
                             }
+                        } 
+                        // 3 Kolom Ringkasan di Excel
+                        else if (C >= totalCols - 3) {
+                            worksheet[cellAddress].t = 'n'; // Numeric
+                            isBold = true;
+                            if (C === totalCols - 3) {
+                                cellFillColor = "ECFDF5";
+                                fontColor = "047857";
+                            } else if (C === totalCols - 2) {
+                                cellFillColor = "FFFBEB";
+                                fontColor = "B45309";
+                            } else if (C === totalCols - 1) {
+                                cellFillColor = "FDF4FF";
+                                fontColor = "A21CAF";
+                            }
+                        } else {
+                            worksheet[cellAddress].t = (C === 0) ? 'n' : 's';
                         }
 
                         worksheet[cellAddress].s = {
@@ -653,7 +753,7 @@
                             fill: { fgColor: { rgb: cellFillColor } },
                             alignment: { 
                                 horizontal: C >= 2 ? "center" : (C === 0 ? "center" : "left"), 
-                                vertical: C >= 2 && worksheet[cellAddress].v === '-' ? "center" : "top", 
+                                vertical: (C >= 2 && C < totalCols - 3 && worksheet[cellAddress].v === '-') ? "center" : "top", 
                                 wrapText: true 
                             }
                         };
@@ -661,8 +761,10 @@
                 }
             }
 
+            // Lebar Kolom Excel
             const colWidths = [{ wch: 6 }, { wch: 25 }];
             filteredDates.forEach(() => colWidths.push({ wch: 15 }));
+            colWidths.push({ wch: 18 }, { wch: 20 }, { wch: 22 }); // 3 Kolom Ringkasan
             worksheet['!cols'] = colWidths;
 
             const workbook = XLSX.utils.book_new();
