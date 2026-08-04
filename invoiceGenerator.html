@@ -37,7 +37,7 @@
         .card-header {
             background-color: #ffffff;
             border-bottom: 1px solid #e2e8f0;
-            padding: 16px 20px;
+            padding: 14px 18px;
             border-top-left-radius: 12px !important;
             border-top-right-radius: 12px !important;
         }
@@ -45,14 +45,14 @@
         .card-title {
             font-weight: 700;
             color: #0f172a;
-            font-size: 1.1rem;
+            font-size: 1rem;
             margin-bottom: 0;
         }
 
         /* Invoice Preview Styling */
         #invoice-preview-container {
             background: #ffffff;
-            padding: 40px;
+            padding: 28px 32px;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             min-height: 842px; /* Roughly A4 aspect ratio */
@@ -61,19 +61,19 @@
         }
 
         .invoice-brand {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 800;
             color: #0f172a;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.3px;
         }
 
         .invoice-badge {
             background-color: #e0f2fe;
             color: #0369a1;
             font-weight: 700;
-            padding: 6px 16px;
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             display: inline-block;
         }
 
@@ -81,9 +81,9 @@
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            margin-top: 25px;
-            margin-bottom: 25px;
-            border-radius: 8px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
             overflow: hidden;
             border: 1px solid #e2e8f0;
         }
@@ -93,9 +93,9 @@
             color: #ffffff !important;
             font-weight: 600;
             text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.8px;
-            padding: 12px 16px;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            padding: 8px 12px;
             border: none;
         }
 
@@ -109,8 +109,8 @@
         }
 
         .invoice-table tbody td {
-            padding: 12px 16px;
-            font-size: 0.9rem;
+            padding: 8px 12px;
+            font-size: 0.8rem;
             color: #334155;
             border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
@@ -123,39 +123,39 @@
         .summary-box {
             background-color: #f8fafc;
             border-radius: 8px;
-            padding: 16px;
+            padding: 12px 14px;
             border: 1px solid #e2e8f0;
         }
 
         .summary-line {
             display: flex;
             justify-content: space-between;
-            padding: 6px 0;
-            font-size: 0.9rem;
+            padding: 4px 0;
+            font-size: 0.82rem;
             color: #475569;
         }
 
         .summary-line.total {
             border-top: 2px solid #cbd5e1;
-            margin-top: 8px;
-            padding-top: 12px;
+            margin-top: 6px;
+            padding-top: 8px;
             font-weight: 800;
-            font-size: 1.15rem;
+            font-size: 1rem;
             color: #0f172a;
         }
 
         .bank-info-box {
             background: #f1f5f9;
             border-left: 4px solid #2563eb;
-            padding: 14px 18px;
+            padding: 10px 14px;
             border-radius: 4px 8px 8px 4px;
-            font-size: 0.88rem;
+            font-size: 0.8rem;
         }
 
         .signature-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #64748b;
-            margin-bottom: 60px;
+            margin-bottom: 45px;
         }
 
         .signature-name {
@@ -164,6 +164,7 @@
             border-bottom: 1.5px solid #0f172a;
             display: inline-block;
             padding-bottom: 2px;
+            font-size: 0.85rem;
         }
 
         /* Print Media Queries */
@@ -229,15 +230,15 @@
                         <div class="card-body">
                             <div class="mb-3">
                                 <label class="form-label font-weight-bold">Nama Toko / Perusahaan / Usaha</label>
-                                <input type="text" id="input-nama-usaha" class="form-control" value="Toko Fajar Jaya Tech" oninput="updateInvoice()">
+                                <input type="text" id="input-nama-usaha" class="form-control" value="HIMAWARI-HUB" oninput="updateInvoice()">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label font-weight-bold">Alamat Lengkap</label>
-                                <textarea id="input-alamat-usaha" class="form-control" rows="2" oninput="updateInvoice()">Jl. Nani Banerjee No. 45, Kota Gorontalo</textarea>
+                                <textarea id="input-alamat-usaha" class="form-control" rows="2" oninput="updateInvoice()">Jln. durian, Tomulobutao Selatan</textarea>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label font-weight-bold">Kontak / HP / Email</label>
-                                <input type="text" id="input-kontak-usaha" class="form-control" value="0812-3456-7890 | info@fajarjayatech.com" oninput="updateInvoice()">
+                                <input type="text" id="input-kontak-usaha" class="form-control" value="0812-4137-007 - Januar" oninput="updateInvoice()">
                             </div>
                         </div>
                     </div>
@@ -327,13 +328,13 @@
                         <div class="card-body">
                             <div class="mb-3">
                                 <label class="form-label font-weight-bold">Rekening Pembayaran</label>
-                                <textarea id="input-rekening" class="form-control" rows="2" oninput="updateInvoice()">Bank BCA: 123-456-7890 a.n. Toko Fajar Jaya
-Bank Mandiri: 098-765-4321 a.n. Toko Fajar Jaya</textarea>
+                                <textarea id="input-rekening" class="form-control" rows="2" oninput="updateInvoice()">Bank BCA: 123-456-7890 a.n. HIMAWARI-HUB
+Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label font-weight-bold">Nama Pelaksana / Penanggung Jawab</label>
-                                    <input type="text" id="input-nama-pelaksana" class="form-control" value="Januar Weool" oninput="updateInvoice()">
+                                    <input type="text" id="input-nama-pelaksana" class="form-control" value="Januar" oninput="updateInvoice()">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label font-weight-bold">Jabatan</label>
@@ -361,39 +362,39 @@ Bank Mandiri: 098-765-4321 a.n. Toko Fajar Jaya</textarea>
                     <div id="invoice-preview-container">
                         
                         <!-- Header Section -->
-                        <div class="row align-items-start mb-4">
+                        <div class="row align-items-start mb-3">
                             <div class="col-7">
-                                <div class="invoice-brand" id="view-nama-usaha">Toko Fajar Jaya Tech</div>
+                                <div class="invoice-brand" id="view-nama-usaha">HIMAWARI-HUB</div>
                                 <div class="text-secondary small mt-1" id="view-alamat-usaha" style="white-space: pre-line;">
-                                    Jl. Nani Banerjee No. 45, Kota Gorontalo
+                                    Jln. durian, Tomulobutao Selatan
                                 </div>
                                 <div class="text-secondary small" id="view-kontak-usaha">
-                                    0812-3456-7890 | info@fajarjayatech.com
+                                    0812-4137-007 - Januar
                                 </div>
                             </div>
                             <div class="col-5 text-end">
-                                <h2 class="fw-bold text-uppercase tracking-wider text-primary mb-1">INVOICE</h2>
-                                <div class="invoice-badge mb-2" id="view-no-invoice">INV/2026/08/001</div>
-                                <div class="small text-muted">Tanggal: <strong id="view-tgl-invoice" class="text-dark">04/08/2026</strong></div>
-                                <div class="small text-muted">Jatuh Tempo: <strong id="view-tgl-jatuh-tempo" class="text-dark">18/08/2026</strong></div>
+                                <h3 class="fw-bold text-uppercase tracking-wider text-primary mb-1">INVOICE</h3>
+                                <div class="invoice-badge mb-1" id="view-no-invoice">INV/2026/08/001</div>
+                                <div class="small text-muted" style="font-size: 0.8rem;">Tanggal: <strong id="view-tgl-invoice" class="text-dark">04/08/2026</strong></div>
+                                <div class="small text-muted" style="font-size: 0.8rem;">Jatuh Tempo: <strong id="view-tgl-jatuh-tempo" class="text-dark">18/08/2026</strong></div>
                             </div>
                         </div>
 
-                        <hr class="my-3 text-muted opacity-25">
+                        <hr class="my-2 text-muted opacity-25">
 
                         <!-- Recipient Section -->
-                        <div class="row mb-4">
+                        <div class="row mb-3">
                             <div class="col-7">
-                                <div class="text-uppercase fs-7 fw-bold text-muted mb-1">DITUJUKAN KEPADA:</div>
-                                <div class="fw-bold text-dark fs-6" id="view-nama-penerima">PT. Bank SulutGo Cabang Gorontalo</div>
-                                <span class="badge bg-secondary mb-1" id="view-tipe-penerima">Perusahaan</span>
-                                <div class="text-secondary small" id="view-alamat-penerima" style="white-space: pre-line;">
+                                <div class="text-uppercase fw-bold text-muted mb-1" style="font-size: 0.7rem;">DITUJUKAN KEPADA:</div>
+                                <div class="fw-bold text-dark" style="font-size: 0.9rem;" id="view-nama-penerima">PT. Bank SulutGo Cabang Gorontalo</div>
+                                <span class="badge bg-secondary mb-1" style="font-size: 0.7rem;" id="view-tipe-penerima">Perusahaan</span>
+                                <div class="text-secondary small" id="view-alamat-penerima" style="white-space: pre-line; font-size: 0.8rem;">
                                     Jl. Ahmad Yani No. 12, Gorontalo
                                 </div>
                             </div>
                             <div class="col-5 text-end">
-                                <div class="text-uppercase fs-7 fw-bold text-muted mb-1">STATUS PEMBAYARAN:</div>
-                                <span class="badge bg-warning text-dark px-3 py-2 fs-7 fw-bold"><i class="fa-solid fa-clock me-1"></i> MENUNGGU PEMBAYARAN</span>
+                                <div class="text-uppercase fw-bold text-muted mb-1" style="font-size: 0.7rem;">STATUS PEMBAYARAN:</div>
+                                <span class="badge bg-warning text-dark px-2 py-1 fw-bold" style="font-size: 0.75rem;"><i class="fa-solid fa-clock me-1"></i> MENUNGGU PEMBAYARAN</span>
                             </div>
                         </div>
 
@@ -414,7 +415,7 @@ Bank Mandiri: 098-765-4321 a.n. Toko Fajar Jaya</textarea>
                         </table>
 
                         <!-- Calculation Summary -->
-                        <div class="row justify-content-end mb-4">
+                        <div class="row justify-content-end mb-3">
                             <div class="col-md-6">
                                 <div class="summary-box">
                                     <div class="summary-line">
@@ -434,18 +435,18 @@ Bank Mandiri: 098-765-4321 a.n. Toko Fajar Jaya</textarea>
                         </div>
 
                         <!-- Payment & Terms & Signature -->
-                        <div class="row align-items-end mt-4 pt-2">
+                        <div class="row align-items-end mt-3 pt-1">
                             <div class="col-7">
-                                <div class="mb-3">
+                                <div class="mb-2">
                                     <div class="fw-bold text-dark small mb-1"><i class="fa-solid fa-building-columns me-1 text-primary"></i> Rekening Pembayaran:</div>
                                     <div class="bank-info-box text-secondary" id="view-rekening" style="white-space: pre-line;">
-                                        Bank BCA: 123-456-7890 a.n. Toko Fajar Jaya
+                                        Bank BCA: 123-456-7890 a.n. HIMAWARI-HUB
                                     </div>
                                 </div>
 
                                 <div id="container-view-syarat">
                                     <div class="fw-bold text-dark small mb-1"><i class="fa-solid fa-circle-info me-1 text-secondary"></i> Syarat & Ketentuan:</div>
-                                    <div class="text-muted small fs-7" id="view-syarat" style="white-space: pre-line;">
+                                    <div class="text-muted small" id="view-syarat" style="white-space: pre-line; font-size: 0.75rem;">
                                         1. Pembayaran dianggap sah setelah dana efektif di rekening.
                                     </div>
                                 </div>
@@ -453,8 +454,8 @@ Bank Mandiri: 098-765-4321 a.n. Toko Fajar Jaya</textarea>
 
                             <div class="col-5 text-center">
                                 <div class="signature-title">Hormat Kami,</div>
-                                <div class="signature-name" id="view-nama-pelaksana">Januar Weool</div>
-                                <div class="small text-muted mt-1" id="view-jabatan-pelaksana">Owner / Manager</div>
+                                <div class="signature-name" id="view-nama-pelaksana">Januar</div>
+                                <div class="small text-muted mt-1" id="view-jabatan-pelaksana" style="font-size: 0.75rem;">Owner / Manager</div>
                             </div>
                         </div>
 
