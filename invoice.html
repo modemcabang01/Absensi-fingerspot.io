@@ -55,7 +55,7 @@
             padding: 28px 32px;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            min-height: 842px; /* Roughly A4 aspect ratio */
+            min-height: 842px;
             position: relative;
             color: #1e293b;
         }
@@ -99,7 +99,6 @@
             border: none;
         }
 
-        /* Alternating Color Rows (Zebra Striping) */
         .invoice-table tbody tr:nth-child(odd) {
             background-color: #ffffff;
         }
@@ -167,7 +166,6 @@
             font-size: 0.85rem;
         }
 
-        /* Print Media Queries */
         @media print {
             body {
                 background: #ffffff !important;
@@ -238,7 +236,7 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label font-weight-bold">Kontak / HP / Email</label>
-                                <input type="text" id="input-kontak-usaha" class="form-control" value="0812-xxxx-xxxx - John Doe" oninput="updateInvoice()">
+                                <input type="text" id="input-kontak-usaha" class="form-control" value="0812-xxxx-xxxx" oninput="updateInvoice()">
                             </div>
                         </div>
                     </div>
@@ -331,16 +329,22 @@
                                 <textarea id="input-rekening" class="form-control" rows="2" oninput="updateInvoice()">Bank BCA: 123-456-7890 a.n. HIMAWARI-HUB
 Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
                             </div>
+
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label font-weight-bold">Nama Pelaksana / Penanggung Jawab</label>
-                                    <input type="text" id="input-nama-pelaksana" class="form-control" value="John Doe" oninput="updateInvoice()">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-weight-bold">Label Tanda Tangan</label>
+                                    <input type="text" id="input-label-ttd" class="form-control" value="Hormat Kami," oninput="updateInvoice()">
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label font-weight-bold">Jabatan</label>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-weight-bold">Nama Pelaksana / Penanggung Jawab</label>
+                                    <input type="text" id="input-nama-pelaksana" class="form-control" value="John Doel" placeholder="Ketik nama pelaksana..." oninput="updateInvoice()">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-weight-bold">Jabatan / Posisi</label>
                                     <input type="text" id="input-jabatan-pelaksana" class="form-control" value="Owner / Manager" oninput="updateInvoice()">
                                 </div>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label font-weight-bold">Syarat & Ketentuan (Opsional)</label>
                                 <textarea id="input-syarat" class="form-control" rows="2" oninput="updateInvoice()">1. Pembayaran dianggap sah setelah dana efektif di rekening.
@@ -369,7 +373,7 @@ Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
                                     Jln. durian, Tomulobutao Selatan
                                 </div>
                                 <div class="text-secondary small" id="view-kontak-usaha">
-                                    0812-xxxx-xxxx - John Doe
+                                    0812-xxxx-xxxx
                                 </div>
                             </div>
                             <div class="col-5 text-end">
@@ -398,7 +402,7 @@ Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
                             </div>
                         </div>
 
-                        <!-- Invoice Table (Zebra Striped) -->
+                        <!-- Invoice Table -->
                         <table class="invoice-table">
                             <thead>
                                 <tr>
@@ -434,7 +438,7 @@ Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
                             </div>
                         </div>
 
-                        <!-- Payment & Terms & Signature -->
+                        <!-- Payment, Terms & Dynamic Signature Section -->
                         <div class="row align-items-end mt-3 pt-1">
                             <div class="col-7">
                                 <div class="mb-2">
@@ -453,8 +457,8 @@ Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
                             </div>
 
                             <div class="col-5 text-center">
-                                <div class="signature-title">Hormat Kami,</div>
-                                <div class="signature-name" id="view-nama-pelaksana">John Doe</div>
+                                <div class="signature-title" id="view-label-ttd">Hormat Kami,</div>
+                                <div class="signature-name" id="view-nama-pelaksana">John Doel</div>
                                 <div class="small text-muted mt-1" id="view-jabatan-pelaksana" style="font-size: 0.75rem;">Owner / Manager</div>
                             </div>
                         </div>
@@ -481,7 +485,7 @@ Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 2 }).format(number);
     }
 
-    // Format Angka Indonesia Tanpa Simbol Mata Uang
+    // Format Angka Indonesia Tanpa Simbol Mata Uang untuk Input Tabel
     function formatAngkaIndo(number) {
         if (number === '' || number === null || number === undefined || isNaN(number)) return '0';
         return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(number);
@@ -623,9 +627,12 @@ Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
             document.getElementById('row-view-diskon').style.display = 'none';
         }
 
-        // 4. Pembayaran & Pengesahan
+        // 4. Pembayaran, Syarat, & Pengesahan (Dynamic Signature)
         document.getElementById('view-rekening').innerText = document.getElementById('input-rekening').value || '-';
-        document.getElementById('view-nama-pelaksana').innerText = document.getElementById('input-nama-pelaksana').value || 'Nama Pelaksana';
+        
+        // Dynamic TTD & Nama Pelaksana
+        document.getElementById('view-label-ttd').innerText = document.getElementById('input-label-ttd').value || 'Hormat Kami,';
+        document.getElementById('view-nama-pelaksana').innerText = document.getElementById('input-nama-pelaksana').value || '-';
         document.getElementById('view-jabatan-pelaksana').innerText = document.getElementById('input-jabatan-pelaksana').value || '';
 
         const syaratText = document.getElementById('input-syarat').value.trim();
