@@ -311,8 +311,8 @@
 
                             <div class="row px-2">
                                 <div class="col-md-6 mb-2">
-                                    <label class="form-label font-weight-bold small">Diskon Tambahan (Rp)</label>
-                                    <input type="number" id="input-diskon" class="form-control form-control-sm" value="50000" min="0" oninput="updateInvoice()">
+                                    <label class="form-label font-weight-bold small">Diskon Tambahan</label>
+                                    <input type="text" id="input-diskon" class="form-control form-control-sm text-end" value="50.000" oninput="handleDiskonInput(this)">
                                 </div>
                             </div>
                         </div>
@@ -485,7 +485,7 @@ Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 2 }).format(number);
     }
 
-    // Format Angka Indonesia Tanpa Simbol Mata Uang untuk Input Tabel
+    // Format Angka Indonesia Tanpa Simbol Mata Uang
     function formatAngkaIndo(number) {
         if (number === '' || number === null || number === undefined || isNaN(number)) return '0';
         return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(number);
@@ -553,6 +553,22 @@ Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
         updateInvoice();
     }
 
+    function handleDiskonInput(input) {
+        let raw = input.value.replace(/[^0-9,]/g, '');
+        let parts = raw.split(',');
+        if (parts.length > 2) raw = parts[0] + ',' + parts.slice(1).join('');
+        
+        let integerPart = parts[0].replace(/\D/g, '');
+        let decimalPart = parts[1] !== undefined ? ',' + parts[1] : '';
+
+        if (integerPart) {
+            integerPart = new Intl.NumberFormat('id-ID').format(parseInt(integerPart, 10));
+        }
+
+        input.value = integerPart + decimalPart;
+        updateInvoice();
+    }
+
     function addItemRow() {
         items.push({ name: "Barang / Pekerjaan Baru", price: 100000, qty: 1, unit: "Pcs" });
         renderInputRows();
@@ -613,8 +629,9 @@ Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
             viewBody.appendChild(tr);
         });
 
-        // Calculations
-        const diskon = parseFloat(document.getElementById('input-diskon').value) || 0;
+        // Calculations & Diskon Format Indonesia
+        const diskonValueRaw = document.getElementById('input-diskon').value;
+        const diskon = parseAngkaIndo(diskonValueRaw);
         const total = Math.max(0, subtotal - diskon);
 
         document.getElementById('view-subtotal').innerText = formatRupiah(subtotal);
@@ -627,10 +644,8 @@ Bank Mandiri: 098-765-4321 a.n. HIMAWARI-HUB</textarea>
             document.getElementById('row-view-diskon').style.display = 'none';
         }
 
-        // 4. Pembayaran, Syarat, & Pengesahan (Dynamic Signature)
+        // 4. Pembayaran, Syarat, & Pengesahan
         document.getElementById('view-rekening').innerText = document.getElementById('input-rekening').value || '-';
-        
-        // Dynamic TTD & Nama Pelaksana
         document.getElementById('view-label-ttd').innerText = document.getElementById('input-label-ttd').value || 'Hormat Kami,';
         document.getElementById('view-nama-pelaksana').innerText = document.getElementById('input-nama-pelaksana').value || '-';
         document.getElementById('view-jabatan-pelaksana').innerText = document.getElementById('input-jabatan-pelaksana').value || '';
