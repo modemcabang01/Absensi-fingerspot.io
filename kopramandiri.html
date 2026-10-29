@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <style>
         :root {
-            /* Palet Warna Baru: Hijau, Oranye, Hitam */
+            /* Palet Warna: Hijau, Oranye, Hitam */
             --primary-color: #2e7d32;      /* Hijau Utama */
             --primary-dark: #1b5e20;       /* Hijau Gelap */
             --accent-orange: #f57c00;      /* Oranye Aksen */
@@ -62,6 +62,22 @@
             color: var(--accent-orange);
         }
 
+        .db-backup-tools {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-db {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
         .rekap-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -89,15 +105,16 @@
         .export-header-btn {
             margin-top: 10px;
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         .export-header-btn button {
             flex: 1;
-            padding: 8px;
+            padding: 8px 4px;
             border: none;
             border-radius: 5px;
             font-weight: bold;
+            font-size: 0.8rem;
             cursor: pointer;
             background-color: var(--primary-color);
             color: #ffffff;
@@ -184,7 +201,7 @@
             box-shadow: 0 0 4px rgba(46, 125, 50, 0.4);
         }
 
-        /* Numpad Fast Buttons (Hijau-Oranye) */
+        /* Numpad Fast Buttons */
         .numpad-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -364,7 +381,11 @@
     <header>
         <div class="header-title">
             <h1>Kopra <span>Mobile DB</span></h1>
-            <span id="current-time" style="font-size: 0.8rem; color: #bbb;"></span>
+            <div class="db-backup-tools">
+                <button class="btn-db" onclick="exportDatabaseFile()">💾 Cadangkan DB</button>
+                <button class="btn-db" onclick="document.getElementById('import-db-file').click()">📂 Muat DB</button>
+                <input type="file" id="import-db-file" accept=".sqlite,.db" style="display:none;" onchange="importDatabaseFile(event)">
+            </div>
         </div>
         <div class="rekap-container">
             <div class="rekap-box">Total Kelapa<span id="stat-total-kg">0 Kg</span></div>
@@ -373,6 +394,7 @@
         </div>
         <div class="export-header-btn">
             <button onclick="exportRekap('csv')">Ekspor CSV</button>
+            <button onclick="exportRekap('excel')">Ekspor Excel</button>
             <button onclick="exportRekap('png')">Ekspor PNG</button>
             <button onclick="exportRekap('pdf')">Ekspor PDF</button>
         </div>
@@ -423,21 +445,22 @@
 
     <script>
         let db = null;
+        let SQLInstance = null;
         const activeSignatures = {};
 
         async function initSQLite() {
             try {
-                const SQL = await initSqlJs({
+                SQLInstance = await initSqlJs({
                     locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
                 });
 
                 const savedDb = localStorage.getItem("kopra_sqlite_db");
                 if (savedDb) {
                     const uInt8Array = new Uint8Array(JSON.parse(savedDb));
-                    db = new SQL.Database(uInt8Array);
+                    db = new SQLInstance.Database(uInt8Array);
                     try { db.run("ALTER TABLE transactions ADD COLUMN signature TEXT;"); } catch(e) {}
                 } else {
-                    db = new SQL.Database();
+                    db = new SQLInstance.Database();
                     createTables();
                 }
                 loadActiveVehicles();
@@ -477,6 +500,42 @@
             }
         }
 
+        /* Feature: Backup & Restore SQLite */
+        function exportDatabaseFile() {
+            if (!db) return;
+            const data = db.export();
+            const blob = new Blob([data], { type: 'application/x-sqlite3' });
+            const link = document.createElement('a');
+            const today = new Date().toISOString().split('T')[0];
+            link.href = URL.createObjectURL(blob);
+            link.download = `Backup_Kopra_DB_${today}.sqlite`;
+            link.click();
+            showToast("Database berhasil dicadangkan!");
+        }
+
+        function importDatabaseFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const uInt8Array = new Uint8Array(e.target.result);
+                    db = new SQLInstance.Database(uInt8Array);
+                    saveDBToLocalStorage();
+                    loadActiveVehicles();
+                    updateHeaderStats();
+                    if (!document.getElementById('history-tab').classList.contains('hidden')) {
+                        loadHistoryFromDB();
+                    }
+                    showToast("Database SQLite berhasil dimuat!");
+                } catch (err) {
+                    showToast("Format file database tidak valid!");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
         window.onload = () => {
             initSQLite();
             setInterval(updateClock, 1000);
@@ -485,7 +544,7 @@
 
         function updateClock() {
             const now = new Date();
-            document.getElementById('current-time').innerText = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID');
+            const timeStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID');
         }
 
         function showToast(msg) {
@@ -734,8 +793,8 @@
                     </div>
                     ${signature ? `<div style="margin:8px 0; background:#fafafa; padding:5px; border:1px solid #ddd; display:inline-block; border-radius:4px;"><span style="font-size:0.75rem; display:block; color:#666;">Tanda Tangan:</span><img src="${signature}" style="max-height:50px; display:block;"></div>` : ''}
                     <div class="btn-group-history">
-                        <button class="btn-sm" onclick="downloadNotaNative(${id}, 'png')">Download PNG</button>
-                        <button class="btn-sm" onclick="downloadNotaNative(${id}, 'pdf')">Download PDF</button>
+                        <button class="btn-sm" onclick="downloadNotaNative(${id}, 'png')">Download PNG (HD)</button>
+                        <button class="btn-sm" onclick="downloadNotaNative(${id}, 'pdf')">Download PDF (HD)</button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -758,11 +817,12 @@
             return { id, pelat, supir, penerima, jamMasuk, jamKeluar, tanggal, signature, batches };
         }
 
+        /* HD Canvas Engine (2x Scaling - Anti Pecah) */
         function downloadNotaNative(txId, format) {
             const data = getTransactionData(txId);
             if (!data) return;
 
-            showToast(`Menyiapkan Nota ${format.toUpperCase()}...`);
+            showToast(`Menyiapkan Nota ${format.toUpperCase()} (HD)...`);
 
             const totalBatches = data.batches;
             const itemsPerPage = 20;
@@ -775,21 +835,24 @@
                 sigImg.src = data.signature;
             }
 
+            const scale = 2; // HD Retina Scale Factor
+
             const renderPage = (pageIndex) => {
                 return new Promise((resolve) => {
                     const canvas = document.createElement('canvas');
-                    canvas.width = 600;
-                    canvas.height = 850;
+                    canvas.width = 600 * scale;
+                    canvas.height = 850 * scale;
                     const ctx = canvas.getContext('2d');
 
+                    ctx.scale(scale, scale);
+
                     ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillRect(0, 0, 600, 850);
 
                     ctx.strokeStyle = '#121212';
                     ctx.lineWidth = 2;
-                    ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
+                    ctx.strokeRect(15, 15, 570, 820);
 
-                    // Header Nota Hijau-Hitam
                     ctx.fillStyle = '#2e7d32';
                     ctx.font = 'bold 20px Arial';
                     ctx.fillText('NOTA PENERIMAAN KELAPA KOPRA', 30, 50);
@@ -799,16 +862,16 @@
                     ctx.fillText(`No. Transaksi : #TX-${data.id}`, 30, 75);
                     ctx.fillText(`Tanggal       : ${data.tanggal}`, 30, 92);
 
-                    ctx.fillRect(30, 105, canvas.width - 60, 1);
+                    ctx.fillRect(30, 105, 540, 1);
                     ctx.font = 'bold 12px Arial';
                     ctx.fillText(`Pelat Kendaraan : ${data.pelat}`, 30, 125);
                     ctx.fillText(`Nama Supir      : ${data.supir}`, 30, 142);
                     ctx.fillText(`Penerima        : ${data.penerima}`, 320, 125);
                     ctx.fillText(`Jam Masuk/Keluar: ${data.jamMasuk} - ${data.jamKeluar}`, 320, 142);
-                    ctx.fillRect(30, 152, canvas.width - 60, 1);
+                    ctx.fillRect(30, 152, 540, 1);
 
                     ctx.fillStyle = '#121212';
-                    ctx.fillRect(30, 160, canvas.width - 60, 25);
+                    ctx.fillRect(30, 160, 540, 25);
                     ctx.fillStyle = '#ffffff';
                     ctx.font = 'bold 12px Arial';
                     ctx.fillText('No / Batch', 40, 177);
@@ -829,14 +892,14 @@
                         
                         ctx.strokeStyle = '#eee';
                         ctx.lineWidth = 1;
-                        ctx.beginPath(); ctx.moveTo(30, y + 5); ctx.lineTo(canvas.width - 30, y + 5); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(30, y + 5); ctx.lineTo(570, y + 5); ctx.stroke();
                         y += 22;
                     });
 
                     if (pageIndex === totalPages) {
                         const totalKg = totalBatches.reduce((s, b) => s + b[0], 0);
                         ctx.fillStyle = '#fbe9e7';
-                        ctx.fillRect(30, y + 5, canvas.width - 60, 28);
+                        ctx.fillRect(30, y + 5, 540, 28);
                         ctx.fillStyle = '#e65100';
                         ctx.font = 'bold 14px Arial';
                         ctx.fillText('TOTAL NETTO:', 40, y + 24);
@@ -846,7 +909,7 @@
                     const footerY = 700;
                     ctx.strokeStyle = '#121212';
                     ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.moveTo(30, footerY); ctx.lineTo(canvas.width - 30, footerY); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(30, footerY); ctx.lineTo(570, footerY); ctx.stroke();
 
                     ctx.fillStyle = '#212121';
                     ctx.font = '11px Arial';
@@ -859,7 +922,7 @@
                     }
 
                     ctx.font = 'italic 10px Arial';
-                    ctx.fillText(`Halaman ${pageIndex} dari ${totalPages}`, canvas.width / 2 - 30, 820);
+                    ctx.fillText(`Halaman ${pageIndex} dari ${totalPages}`, 270, 820);
 
                     resolve(canvas);
                 });
@@ -874,12 +937,12 @@
                 if (format === 'png') {
                     pagesCanvas.forEach((cv, idx) => {
                         const link = document.createElement('a');
-                        link.download = `Nota_${data.pelat}_Hal_${idx+1}.png`;
-                        link.href = cv.toDataURL('image/png');
+                        link.download = `Nota_${data.pelat}_Hal_${idx+1}_HD.png`;
+                        link.href = cv.toDataURL('image/png', 1.0);
                         link.click();
                     });
                 } else if (format === 'pdf') {
-                    generateDirectPDFBinary(pagesCanvas, `Nota_${data.pelat}.pdf`);
+                    generateDirectPDFBinary(pagesCanvas, `Nota_${data.pelat}_HD.pdf`);
                 }
             })();
         }
@@ -906,7 +969,7 @@
             const offsets = new Array(totalObjects + 1);
 
             const imgDataList = canvasArray.map(c => {
-                const dataUrl = c.toDataURL('image/jpeg', 0.92);
+                const dataUrl = c.toDataURL('image/jpeg', 0.95);
                 const base64 = dataUrl.split(',')[1];
                 const binaryString = atob(base64);
                 const len = binaryString.length;
@@ -968,6 +1031,7 @@
             link.click();
         }
 
+        /* Feature: Ekspor CSV & Excel */
         function exportRekap(format) {
             const today = document.getElementById('filter-date').value || new Date().toISOString().split('T')[0];
             const res = db.exec(`SELECT * FROM transactions WHERE tanggal = '${today}' AND status = 'SELESAI'`);
@@ -977,19 +1041,24 @@
                 return;
             }
 
-            if (format === 'csv') {
-                let csv = "No,Pelat,Supir,Penerima,Jam Masuk,Jam Keluar,Total Kg\n";
+            if (format === 'csv' || format === 'excel') {
+                const sep = format === 'excel' ? '\t' : ',';
+                let content = `No${sep}Pelat${sep}Supir${sep}Penerima${sep}Jam Masuk${sep}Jam Keluar${sep}Total (Kg)\n`;
+                
                 res[0].values.forEach((row, idx) => {
                     const [id, pelat, supir, penerima, jamMasuk, jamKeluar] = row;
                     const bRes = db.exec(`SELECT SUM(weight) FROM weighing_batches WHERE transaction_id = ${id}`);
                     const totalKg = bRes[0]?.values[0][0] || 0;
-                    csv += `${idx+1},"${pelat}","${supir}","${penerima}","${jamMasuk}","${jamKeluar}",${totalKg}\n`;
+                    content += `${idx+1}${sep}"${pelat}"${sep}"${supir}"${sep}"${penerima}"${sep}"${jamMasuk}"${sep}"${jamKeluar}"${sep}${totalKg}\n`;
                 });
 
-                const blob = new Blob([csv], { type: 'text/csv' });
+                const mimeType = format === 'excel' ? 'application/vnd.ms-excel' : 'text/csv';
+                const ext = format === 'excel' ? 'xls' : 'csv';
+                
+                const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = `Rekap_Kopra_${today}.csv`;
+                link.download = `Rekap_Kopra_${today}.${ext}`;
                 link.click();
             } else {
                 showToast(`Ekspor Rekap ${format.toUpperCase()} Berhasil`);
