@@ -390,7 +390,6 @@
                 if (savedDb) {
                     const uInt8Array = new Uint8Array(JSON.parse(savedDb));
                     db = new SQL.Database(uInt8Array);
-                    // Cek & migrasi kolom signature jika belum ada
                     try { db.run("ALTER TABLE transactions ADD COLUMN signature TEXT;"); } catch(e) {}
                 } else {
                     db = new SQL.Database();
@@ -503,7 +502,6 @@
             res[0].values.forEach(row => {
                 const [id, pelat, supir, penerima, jamMasuk] = row;
                 
-                // Ambil Batch Timbangan (Terbaru di Atas)
                 const batchRes = db.exec(`SELECT weight, timestamp FROM weighing_batches WHERE transaction_id = ${id} ORDER BY id DESC`);
                 let batches = [];
                 let totalBerat = 0;
@@ -544,7 +542,6 @@
                         `).join('')}
                     </ul>
 
-                    <!-- Signature Pad -->
                     <div class="sig-container">
                         <label style="font-size:0.8rem; font-weight:600; display:block; margin-bottom:4px;">Tanda Tangan (Supir / Penerima):</label>
                         <canvas id="sig-canvas-${id}" class="sig-canvas"></canvas>
@@ -558,7 +555,6 @@
                 `;
                 container.appendChild(card);
                 
-                // Init Signature Pad for this card
                 setTimeout(() => initSignaturePad(id), 50);
             });
         }
@@ -659,7 +655,6 @@
             document.getElementById('stat-selesai').innerText = `${totalSelesai} Truk`;
         }
 
-        // TAB 2: RIWAYAT DATABASE
         function loadHistoryFromDB() {
             const container = document.getElementById('history-list-container');
             container.innerHTML = '';
@@ -735,7 +730,6 @@
                 sigImg.src = data.signature;
             }
 
-            // Fungsi render canvas nota per halaman
             const renderPage = (pageIndex) => {
                 return new Promise((resolve) => {
                     const canvas = document.createElement('canvas');
@@ -802,7 +796,6 @@
                         ctx.fillText(`${totalKg} Kg`, 480, y + 24);
                     }
 
-                    // Footer & Area Tanda Tangan Tersimpan
                     const footerY = 700;
                     ctx.strokeStyle = '#333';
                     ctx.lineWidth = 1;
@@ -825,7 +818,6 @@
                 });
             };
 
-            // Generate semua halaman
             (async () => {
                 for (let p = 1; p <= totalPages; p++) {
                     const cv = await renderPage(p);
@@ -840,39 +832,90 @@
                         link.click();
                     });
                 } else if (format === 'pdf') {
-                    generateDirectPDF(pagesCanvas, `Nota_${data.pelat}.pdf`);
+                    generateDirectPDFBinary(pagesCanvas, `Nota_${data.pelat}.pdf`);
                 }
             })();
         }
 
-        function generateDirectPDF(canvasArray, filename) {
-            const imgDataList = canvasArray.map(c => c.toDataURL('image/jpeg', 0.95));
-            let pdfContent = `%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [`;
-            
-            for (let i = 0; i < imgDataList.length; i++) {
-                pdfContent += `${3 + i * 3} 0 R `;
+        // Uint8Array Binary Stream PDF Generator (Anti Blank Page)
+        function generateDirectPDFBinary(canvasArray, filename) {
+            const encoder = new TextEncoder();
+            const chunks = [];
+            let currentOffset = 0;
+
+            function addBytes(uint8arr) {
+                chunks.push(uint8arr);
+                currentOffset += uint8arr.length;
             }
-            pdfContent += `] /Count ${imgDataList.length} >>\nendobj\n`;
 
-            imgDataList.forEach((dataUrl, i) => {
-                const pageObjId = 3 + i * 3;
-                const contentObjId = pageObjId + 1;
-                const imageObjId = pageObjId + 2;
+            function addString(str) {
+                const arr = encoder.encode(str);
+                addBytes(arr);
+            }
 
-                pdfContent += `${pageObjId} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Img${i} ${imageObjId} 0 R >> >> /Contents ${contentObjId} 0 R >>\nendobj\n`;
-                
-                const streamStr = `q 595 0 0 842 0 0 cm /Img${i} Do Q`;
-                pdfContent += `${contentObjId} 0 obj\n<< /Length ${streamStr.length} >>\nstream\n${streamStr}\nendstream\nendobj\n`;
+            addString("%PDF-1.4\n");
 
-                const base64Data = dataUrl.split(',')[1];
-                const binaryImg = atob(base64Data);
-                pdfContent += `${imageObjId} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${canvasArray[i].width} /Height ${canvasArray[i].height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${binaryImg.length} >>\nstream\n` + binaryImg + `\nendstream\nendobj\n`;
+            const numPages = canvasArray.length;
+            const totalObjects = 2 + numPages * 3;
+            const offsets = new Array(totalObjects + 1);
+
+            const imgDataList = canvasArray.map(c => {
+                const dataUrl = c.toDataURL('image/jpeg', 0.92);
+                const base64 = dataUrl.split(',')[1];
+                const binaryString = atob(base64);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return { bytes, width: c.width, height: c.height };
             });
 
-            pdfContent += `xref\n0 ${3 + imgDataList.length * 3}\n0000000000 65535 f \n`;
-            pdfContent += `trailer\n<< /Size ${3 + imgDataList.length * 3} /Root 1 0 R >>\nstartxref\n${pdfContent.length}\n%%EOF`;
+            function writeObj(objNum, strContent, binaryData = null) {
+                offsets[objNum] = currentOffset;
+                addString(strContent);
+                if (binaryData) {
+                    addBytes(binaryData);
+                }
+            }
 
-            const blob = new Blob([pdfContent], { type: 'application/pdf' });
+            writeObj(1, "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+
+            let kids = "2 0 obj\n<< /Type /Pages /Kids [";
+            for (let i = 0; i < numPages; i++) {
+                kids += `${3 + i * 3} 0 R `;
+            }
+            kids += `] /Count ${numPages} >>\nendobj\n`;
+            writeObj(2, kids);
+
+            for (let i = 0; i < numPages; i++) {
+                const pageId = 3 + i * 3;
+                const contentId = pageId + 1;
+                const imageId = pageId + 2;
+
+                writeObj(pageId, `${pageId} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Img${i} ${imageId} 0 R >> >> /Contents ${contentId} 0 R >>\nendobj\n`);
+
+                const streamStr = `q 595 0 0 842 0 0 cm /Img${i} Do Q`;
+                writeObj(contentId, `${contentId} 0 obj\n<< /Length ${streamStr.length} >>\nstream\n${streamStr}\nendstream\nendobj\n`);
+
+                const img = imgDataList[i];
+                const imgHeader = `${imageId} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${img.width} /Height ${img.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>\nstream\n`;
+                const imgFooter = `\nendstream\nendobj\n`;
+                
+                writeObj(imageId, imgHeader, img.bytes);
+                addString(imgFooter);
+            }
+
+            const xrefOffset = currentOffset;
+            let xrefStr = `xref\n0 ${totalObjects + 1}\n0000000000 65535 f \n`;
+            for (let i = 1; i <= totalObjects; i++) {
+                const off = offsets[i].toString().padStart(10, '0');
+                xrefStr += `${off} 00000 n \n`;
+            }
+            xrefStr += `trailer\n<< /Size ${totalObjects + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+            addString(xrefStr);
+
+            const blob = new Blob(chunks, { type: 'application/pdf' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = filename;
