@@ -8,12 +8,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <style>
         :root {
-            --primary-color: #2e7d32;
-            --primary-dark: #1b5e20;
-            --secondary-color: #f57c00;
-            --bg-color: #f4f6f8;
+            /* Palet Warna Baru: Hijau, Oranye, Hitam */
+            --primary-color: #2e7d32;      /* Hijau Utama */
+            --primary-dark: #1b5e20;       /* Hijau Gelap */
+            --accent-orange: #f57c00;      /* Oranye Aksen */
+            --accent-orange-dark: #e65100; /* Oranye Gelap */
+            --black-color: #121212;        /* Hitam Utama */
+            --black-surface: #1e1e1e;      /* Hitam Elemen */
+            --bg-color: #f4f6f8;           /* Latar Belakang Terang */
             --card-bg: #ffffff;
-            --text-color: #333333;
+            --text-color: #212121;
             --border-color: #cccccc;
         }
 
@@ -30,15 +34,16 @@
             padding-bottom: 30px;
         }
 
-        /* Header */
+        /* Header Tema Hitam Elegan dengan Aksen Hijau & Oranye */
         header {
-            background-color: var(--primary-color);
+            background-color: var(--black-color);
             color: white;
             padding: 15px;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            border-bottom: 3px solid var(--accent-orange);
         }
 
         .header-title {
@@ -50,17 +55,27 @@
 
         .header-title h1 {
             font-size: 1.2rem;
+            color: #ffffff;
+        }
+
+        .header-title h1 span {
+            color: var(--accent-orange);
         }
 
         .rekap-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            background: rgba(255, 255, 255, 0.15);
+            background: var(--black-surface);
             padding: 10px;
             border-radius: 8px;
+            border: 1px solid #333;
             text-align: center;
             font-size: 0.85rem;
+        }
+
+        .rekap-box {
+            color: #ccc;
         }
 
         .rekap-box span {
@@ -68,6 +83,7 @@
             font-weight: bold;
             font-size: 1.1rem;
             margin-top: 2px;
+            color: var(--accent-orange);
         }
 
         .export-header-btn {
@@ -83,15 +99,20 @@
             border-radius: 5px;
             font-weight: bold;
             cursor: pointer;
-            background-color: #ffffff;
-            color: var(--primary-dark);
+            background-color: var(--primary-color);
+            color: #ffffff;
+            transition: background 0.2s;
+        }
+
+        .export-header-btn button:active {
+            background-color: var(--primary-dark);
         }
 
         /* Navigation Tabs */
         .tabs {
             display: flex;
-            background-color: #fff;
-            border-bottom: 2px solid var(--border-color);
+            background-color: var(--black-color);
+            border-bottom: 2px solid #333;
         }
 
         .tab-btn {
@@ -102,13 +123,14 @@
             border: none;
             font-weight: bold;
             font-size: 0.95rem;
-            color: #666;
+            color: #aaa;
             cursor: pointer;
         }
 
         .tab-btn.active {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--primary-color);
+            color: var(--accent-orange);
+            border-bottom: 3px solid var(--accent-orange);
+            background-color: var(--black-surface);
         }
 
         /* Main Container */
@@ -123,14 +145,15 @@
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 15px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
         }
 
         .card h2 {
             font-size: 1.1rem;
             margin-bottom: 12px;
-            color: var(--primary-dark);
-            border-bottom: 1px solid var(--border-color);
+            color: var(--black-color);
+            border-bottom: 2px solid var(--primary-color);
             padding-bottom: 6px;
         }
 
@@ -144,6 +167,7 @@
             font-size: 0.85rem;
             margin-bottom: 4px;
             font-weight: 600;
+            color: var(--black-color);
         }
 
         .form-control {
@@ -154,7 +178,13 @@
             font-size: 1rem;
         }
 
-        /* Numpad Fast Buttons */
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 4px rgba(46, 125, 50, 0.4);
+        }
+
+        /* Numpad Fast Buttons (Hijau-Oranye) */
         .numpad-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -163,9 +193,9 @@
         }
 
         .btn-quick {
-            background-color: #e8f5e9;
-            color: var(--primary-dark);
-            border: 1px solid #a5d6a7;
+            background-color: #fbe9e7;
+            color: var(--accent-orange-dark);
+            border: 1px solid #ffccbc;
             padding: 12px 5px;
             font-size: 1rem;
             font-weight: bold;
@@ -174,7 +204,7 @@
         }
 
         .btn-quick:active {
-            background-color: #c8e6c9;
+            background-color: #ffccbc;
         }
 
         .manual-input-group {
@@ -192,9 +222,13 @@
             cursor: pointer;
         }
 
+        .btn-add:active {
+            background-color: var(--primary-dark);
+        }
+
         .btn-finish {
             width: 100%;
-            background-color: var(--secondary-color);
+            background-color: var(--accent-orange);
             color: white;
             border: none;
             padding: 12px;
@@ -203,6 +237,10 @@
             border-radius: 5px;
             cursor: pointer;
             margin-top: 10px;
+        }
+
+        .btn-finish:active {
+            background-color: var(--accent-orange-dark);
         }
 
         /* Batch List */
@@ -214,13 +252,14 @@
             border-radius: 5px;
             padding: 5px;
             margin-top: 10px;
+            background-color: #fafafa;
         }
 
         .batch-item {
             display: flex;
             justify-content: space-between;
             padding: 6px 10px;
-            border-bottom: 1px dashed #eee;
+            border-bottom: 1px dashed #ddd;
             font-size: 0.9rem;
         }
 
@@ -241,7 +280,7 @@
             width: 100%;
             height: 120px;
             background: #ffffff;
-            border: 1px dashed #bbb;
+            border: 1px dashed #999;
             cursor: crosshair;
             touch-action: none;
             display: block;
@@ -255,7 +294,7 @@
         }
 
         .btn-clear-sig {
-            background: #d32f2f;
+            background: var(--black-color);
             color: white;
             border: none;
             padding: 4px 10px;
@@ -264,9 +303,9 @@
             cursor: pointer;
         }
 
-        /* Active Vehicle Card */
+        /* Cards Status */
         .active-vehicle-card {
-            border-left: 5px solid var(--secondary-color);
+            border-left: 5px solid var(--accent-orange);
         }
 
         .history-card {
@@ -281,13 +320,18 @@
 
         .btn-sm {
             flex: 1;
-            padding: 6px;
-            border: 1px solid var(--border-color);
-            background: #fff;
+            padding: 8px;
+            border: 1px solid var(--black-color);
+            background: var(--black-color);
+            color: white;
             border-radius: 4px;
             font-size: 0.8rem;
             font-weight: bold;
             cursor: pointer;
+        }
+
+        .btn-sm:active {
+            background: #333;
         }
 
         .date-filter {
@@ -302,7 +346,8 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #323232;
+            background-color: var(--black-color);
+            border: 1px solid var(--accent-orange);
             color: #fff;
             padding: 10px 20px;
             border-radius: 20px;
@@ -318,8 +363,8 @@
 
     <header>
         <div class="header-title">
-            <h1>Kopra Mobile DB</h1>
-            <span id="current-time" style="font-size: 0.8rem;"></span>
+            <h1>Kopra <span>Mobile DB</span></h1>
+            <span id="current-time" style="font-size: 0.8rem; color: #bbb;"></span>
         </div>
         <div class="rekap-container">
             <div class="rekap-box">Total Kelapa<span id="stat-total-kg">0 Kg</span></div>
@@ -543,7 +588,7 @@
                     </ul>
 
                     <div class="sig-container">
-                        <label style="font-size:0.8rem; font-weight:600; display:block; margin-bottom:4px;">Tanda Tangan (Supir / Penerima):</label>
+                        <label style="font-size:0.8rem; font-weight:600; display:block; margin-bottom:4px; color: var(--black-color);">Tanda Tangan (Supir / Penerima):</label>
                         <canvas id="sig-canvas-${id}" class="sig-canvas"></canvas>
                         <div class="sig-actions">
                             <span style="font-size:0.75rem; color:#666;">Tulis tanda tangan di atas</span>
@@ -681,7 +726,7 @@
                 const card = document.createElement('div');
                 card.className = 'card history-card';
                 card.innerHTML = `
-                    <h2>${pelat} <small style="float:right; font-size:0.8rem;">${tanggal}</small></h2>
+                    <h2>${pelat} <small style="float:right; font-size:0.8rem; color:#666;">${tanggal}</small></h2>
                     <p style="font-size:0.85rem; color:#555;">Supir: <b>${supir}</b> | Penerima: <b>${penerima}</b></p>
                     <p style="font-size:0.85rem; color:#555;">Masuk: <b>${jamMasuk}</b> | Keluar: <b>${jamKeluar}</b></p>
                     <div style="margin: 8px 0; font-size: 1.1rem; font-weight: bold; color: var(--primary-dark);">
@@ -740,15 +785,16 @@
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                    ctx.strokeStyle = '#333333';
+                    ctx.strokeStyle = '#121212';
                     ctx.lineWidth = 2;
                     ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
 
-                    ctx.fillStyle = '#1b5e20';
+                    // Header Nota Hijau-Hitam
+                    ctx.fillStyle = '#2e7d32';
                     ctx.font = 'bold 20px Arial';
                     ctx.fillText('NOTA PENERIMAAN KELAPA KOPRA', 30, 50);
 
-                    ctx.fillStyle = '#333';
+                    ctx.fillStyle = '#212121';
                     ctx.font = '12px Arial';
                     ctx.fillText(`No. Transaksi : #TX-${data.id}`, 30, 75);
                     ctx.fillText(`Tanggal       : ${data.tanggal}`, 30, 92);
@@ -761,9 +807,9 @@
                     ctx.fillText(`Jam Masuk/Keluar: ${data.jamMasuk} - ${data.jamKeluar}`, 320, 142);
                     ctx.fillRect(30, 152, canvas.width - 60, 1);
 
-                    ctx.fillStyle = '#f4f4f4';
+                    ctx.fillStyle = '#121212';
                     ctx.fillRect(30, 160, canvas.width - 60, 25);
-                    ctx.fillStyle = '#000';
+                    ctx.fillStyle = '#ffffff';
                     ctx.font = 'bold 12px Arial';
                     ctx.fillText('No / Batch', 40, 177);
                     ctx.fillText('Jam Penimbangan', 200, 177);
@@ -773,6 +819,7 @@
                     const pageItems = totalBatches.slice(startIndex, startIndex + itemsPerPage);
                     let y = 202;
 
+                    ctx.fillStyle = '#212121';
                     ctx.font = '12px Arial';
                     pageItems.forEach((b, idx) => {
                         const globalIdx = totalBatches.length - (startIndex + idx);
@@ -788,20 +835,20 @@
 
                     if (pageIndex === totalPages) {
                         const totalKg = totalBatches.reduce((s, b) => s + b[0], 0);
-                        ctx.fillStyle = '#e8f5e9';
+                        ctx.fillStyle = '#fbe9e7';
                         ctx.fillRect(30, y + 5, canvas.width - 60, 28);
-                        ctx.fillStyle = '#1b5e20';
+                        ctx.fillStyle = '#e65100';
                         ctx.font = 'bold 14px Arial';
                         ctx.fillText('TOTAL NETTO:', 40, y + 24);
                         ctx.fillText(`${totalKg} Kg`, 480, y + 24);
                     }
 
                     const footerY = 700;
-                    ctx.strokeStyle = '#333';
+                    ctx.strokeStyle = '#121212';
                     ctx.lineWidth = 1;
                     ctx.beginPath(); ctx.moveTo(30, footerY); ctx.lineTo(canvas.width - 30, footerY); ctx.stroke();
 
-                    ctx.fillStyle = '#333';
+                    ctx.fillStyle = '#212121';
                     ctx.font = '11px Arial';
                     ctx.fillText('Petugas Penerima & Supir,', 30, footerY + 20);
                     
@@ -837,7 +884,6 @@
             })();
         }
 
-        // Uint8Array Binary Stream PDF Generator (Anti Blank Page)
         function generateDirectPDFBinary(canvasArray, filename) {
             const encoder = new TextEncoder();
             const chunks = [];
