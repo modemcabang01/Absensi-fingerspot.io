@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Penerimaan Kelapa Kopra</title>
+    <!-- sql.js SQLite WebAssembly -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <style>
         /* CSS Reset & Variable Theme */
         :root {
@@ -45,6 +47,30 @@
             flex-direction: column;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             position: relative;
+        }
+
+        /* Database Status Banner */
+        .db-status-bar {
+            background: #1e293b;
+            color: #94a3b8;
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .db-status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #eab308;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .db-status-indicator.ready {
+            background: #10b981;
         }
 
         /* Header UI */
@@ -107,7 +133,7 @@
             flex-direction: column;
             overflow: hidden;
             z-index: 30;
-            min-width: 130px;
+            min-width: 140px;
             border: 1px solid var(--border-color);
         }
 
@@ -130,11 +156,6 @@
         .dropdown-menu button:hover {
             background: #f1f5f9;
             color: var(--primary);
-        }
-
-        .btn-export:active {
-            background-color: var(--accent-hover);
-            transform: scale(0.97);
         }
 
         /* Header Summary Stats */
@@ -519,26 +540,60 @@
             font-size: 0.85rem;
         }
 
-        /* Utility */
+        /* Filter Box */
+        .filter-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .filter-card label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .filter-card input[type="date"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-weight: 700;
+            outline: none;
+        }
+
         .hidden { display: none !important; }
-        .text-emerald { color: var(--primary); }
-        .font-bold { font-weight: 700; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
+        <!-- DB Status Bar -->
+        <div class="db-status-bar">
+            <div>
+                <span id="db-indicator" class="db-status-indicator"></span>
+                <span id="db-status-text">Inisialisasi SQLite DB...</span>
+            </div>
+            <span id="db-storage-info">SQLite WASM</span>
+        </div>
+
         <!-- Header Utama -->
         <header>
             <div class="header-top">
                 <div>
                     <div class="brand-title">KOPRA MANDIRI</div>
-                    <div class="brand-sub">Penerimaan Kelapa Butir</div>
+                    <div class="brand-sub">Penerimaan Kelapa (SQLite Engine)</div>
                 </div>
                 <div class="export-dropdown">
                     <button onclick="toggleExportMenu()" class="btn-export">
                         <span>📊</span>
-                        <span>Ekspor Rekap ▾</span>
+                        <span>Ekspor ▾</span>
                     </button>
                     <div id="export-menu" class="dropdown-menu hidden">
                         <button onclick="exportSummaryPNG()">📸 Rekap Gambar (PNG)</button>
@@ -551,7 +606,7 @@
             <!-- Rekapitulasi Ringkas -->
             <div class="header-stats">
                 <div class="stat-card">
-                    <span class="label">Total Hari Ini</span>
+                    <span class="label">Total Kg</span>
                     <span id="stat-total" class="value">0 Kg</span>
                 </div>
                 <div class="stat-card">
@@ -568,7 +623,7 @@
         <!-- Navigation Tabs -->
         <div class="tab-nav">
             <button id="tab-btn-form" onclick="switchTab('form')" class="tab-btn active">Timbang / Masuk</button>
-            <button id="tab-btn-history" onclick="switchTab('history')" class="tab-btn">Riwayat Hari Ini</button>
+            <button id="tab-btn-history" onclick="switchTab('history')" class="tab-btn">Riwayat Database</button>
         </div>
 
         <!-- Main Content -->
@@ -599,7 +654,7 @@
                     </form>
                 </div>
 
-                <!-- Panel Timbang Aktif (Muncul saat kendaraan dalam proses) -->
+                <!-- Panel Timbang Aktif -->
                 <div id="section-weighing" class="card hidden">
                     <div class="card-header">
                         <span id="active-plate" class="plate-badge">DB ---- XX</span>
@@ -628,7 +683,7 @@
                         <button type="button" class="btn-quick" onclick="addQuickBatch(100)">+100kg</button>
                     </div>
 
-                    <!-- Input Manual & Tombol Tambah -->
+                    <!-- Input Manual -->
                     <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 4px;">
                         Input Manual (Kustom Kg):
                     </label>
@@ -649,8 +704,14 @@
                 </div>
             </div>
 
-            <!-- TAB 2: RIWAYAT HARI INI -->
+            <!-- TAB 2: RIWAYAT DATABASE & FILTER TANGGAL -->
             <div id="view-history" class="hidden">
+                <div class="filter-card">
+                    <label for="history-date">Filter Tanggal:</label>
+                    <input type="date" id="history-date" onchange="renderHistory()">
+                    <button onclick="resetDateFilter()" style="padding: 8px 12px; background: #cbd5e1; border: none; border-radius: 6px; font-weight: 700; font-size: 0.75rem; cursor: pointer;">Semua</button>
+                </div>
+
                 <div id="history-list" style="display: flex; flex-direction: column; gap: 12px;">
                     <!-- Injected by JS -->
                 </div>
@@ -696,20 +757,125 @@
         </div>
     </div>
 
-    <!-- Hidden Canvas For PDF/PNG Generation -->
+    <!-- Hidden Canvas For Export -->
     <canvas id="export-canvas" style="display: none;"></canvas>
 
     <script>
-        // State Application
-        let transactions = JSON.parse(localStorage.getItem('kopra_transactions')) || [];
+        // Global SQLite Variables
+        let db = null;
+        let SQL = null;
         let activeTransactionId = localStorage.getItem('kopra_active_id') || null;
 
-        // Initialize App
+        // Initialize SQLite Engine & IndexedDB Sync
+        async function initDatabase() {
+            try {
+                SQL = await initSqlJs({
+                    locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+                });
+
+                // Load existing SQLite binary from IndexedDB if present
+                const savedDbBuffer = await loadFromIndexedDB();
+                if (savedDbBuffer) {
+                    db = new SQL.Database(new Uint8Array(savedDbBuffer));
+                } else {
+                    db = new SQL.Database();
+                }
+
+                // Create SQLite Tables
+                db.run(`
+                    CREATE TABLE IF NOT EXISTS transactions (
+                        id TEXT PRIMARY KEY,
+                        plate TEXT NOT NULL,
+                        driver TEXT,
+                        receiver TEXT NOT NULL,
+                        date_entry TEXT NOT NULL,
+                        time_in TEXT NOT NULL,
+                        time_out TEXT,
+                        status TEXT NOT NULL
+                    );
+                `);
+
+                db.run(`
+                    CREATE TABLE IF NOT EXISTS weighing_batches (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        trx_id TEXT NOT NULL,
+                        weight REAL NOT NULL,
+                        time TEXT NOT NULL,
+                        created_at INTEGER NOT NULL,
+                        FOREIGN KEY(trx_id) REFERENCES transactions(id) ON DELETE CASCADE
+                    );
+                `);
+
+                await persistDatabase();
+                updateDbStatusUI(true, 'SQLite DB Siap');
+
+                // Set Today Date in History Filter Default
+                const todayIso = new Date().toISOString().slice(0, 10);
+                document.getElementById('history-date').value = todayIso;
+
+                updateAppView();
+                renderStats();
+            } catch (err) {
+                console.error("Gagal inisialisasi SQLite:", err);
+                updateDbStatusUI(false, 'Gagal Load SQLite');
+            }
+        }
+
+        // IndexedDB Persistence Wrapper for SQLite Engine
+        function persistDatabase() {
+            if (!db) return Promise.resolve();
+            const binaryArray = db.export();
+            return saveToIndexedDB(binaryArray);
+        }
+
+        function saveToIndexedDB(data) {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('KopraSQLiteDB', 1);
+                request.onupgradeneeded = (e) => {
+                    e.target.result.createObjectStore('sqlite_store');
+                };
+                request.onsuccess = (e) => {
+                    const idb = e.target.result;
+                    const tx = idb.transaction('sqlite_store', 'readwrite');
+                    tx.objectStore('sqlite_store').put(data, 'main_db');
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function loadFromIndexedDB() {
+            return new Promise((resolve) => {
+                const request = indexedDB.open('KopraSQLiteDB', 1);
+                request.onupgradeneeded = (e) => {
+                    e.target.result.createObjectStore('sqlite_store');
+                };
+                request.onsuccess = (e) => {
+                    const idb = e.target.result;
+                    const tx = idb.transaction('sqlite_store', 'readonly');
+                    const req = tx.objectStore('sqlite_store').get('main_db');
+                    req.onsuccess = () => resolve(req.result || null);
+                    req.onerror = () => resolve(null);
+                };
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        function updateDbStatusUI(ready, text) {
+            const ind = document.getElementById('db-indicator');
+            const txt = document.getElementById('db-status-text');
+            if (ready) {
+                ind.classList.add('ready');
+            } else {
+                ind.classList.remove('ready');
+            }
+            txt.innerText = text;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            updateAppView();
-            renderStats();
-            
-            // Close dropdown menu when clicked outside
+            initDatabase();
+
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.export-dropdown')) {
                     document.getElementById('export-menu').classList.add('hidden');
@@ -721,39 +887,10 @@
             document.getElementById('export-menu').classList.toggle('hidden');
         }
 
-        function saveState() {
-            localStorage.setItem('kopra_transactions', JSON.stringify(transactions));
-            if (activeTransactionId) {
-                localStorage.setItem('kopra_active_id', activeTransactionId);
-            } else {
-                localStorage.removeItem('kopra_active_id');
-            }
-            renderStats();
-        }
-
-        // Add Quick Preset Batch Directly
-        function addQuickBatch(weight) {
-            if (!activeTransactionId) return;
-
-            const trx = transactions.find(t => t.id === activeTransactionId);
-            if (trx) {
-                const now = new Date();
-                trx.batches.unshift({
-                    id: Date.now(),
-                    weight: weight,
-                    time: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                });
-
-                saveState();
-                updateAppView();
-            }
-        }
-
-        // Switch View Tabs
         function switchTab(tab) {
             document.getElementById('tab-btn-form').classList.toggle('active', tab === 'form');
             document.getElementById('tab-btn-history').classList.toggle('active', tab === 'history');
-            
+
             document.getElementById('view-form').classList.toggle('hidden', tab !== 'form');
             document.getElementById('view-history').classList.toggle('hidden', tab !== 'history');
 
@@ -762,8 +899,33 @@
             }
         }
 
+        // Helper Queries
+        function getTransactionById(id) {
+            if (!db) return null;
+            const stmt = db.prepare(`SELECT * FROM transactions WHERE id = ?`);
+            stmt.bind([id]);
+            if (stmt.step()) {
+                const row = stmt.getAsObject();
+                stmt.free();
+
+                // Fetch Batches
+                const bStmt = db.prepare(`SELECT * FROM weighing_batches WHERE trx_id = ? ORDER BY id DESC`);
+                bStmt.bind([id]);
+                const batches = [];
+                while (bStmt.step()) {
+                    batches.push(bStmt.getAsObject());
+                }
+                bStmt.free();
+
+                row.batches = batches;
+                return row;
+            }
+            stmt.free();
+            return null;
+        }
+
         // Form Registration Start
-        function handleStartEntry(e) {
+        async function handleStartEntry(e) {
             e.preventDefault();
             const plate = document.getElementById('input-plate').value.trim().toUpperCase();
             const driver = document.getElementById('input-driver').value.trim() || '-';
@@ -772,65 +934,73 @@
             if (!plate || !receiver) return;
 
             const now = new Date();
-            const newTrx = {
-                id: 'TRX-' + Date.now().toString().slice(-6),
-                plate: plate,
-                driver: driver,
-                receiver: receiver,
-                timeIn: now.toISOString(),
-                timeOut: null,
-                status: 'ACTIVE',
-                batches: []
-            };
+            const dateIso = now.toISOString().slice(0, 10);
+            const id = 'TRX-' + Date.now().toString().slice(-6);
 
-            transactions.unshift(newTrx);
-            activeTransactionId = newTrx.id;
-            saveState();
+            db.run(`
+                INSERT INTO transactions (id, plate, driver, receiver, date_entry, time_in, time_out, status)
+                VALUES (?, ?, ?, ?, ?, ?, NULL, 'ACTIVE')
+            `, [id, plate, driver, receiver, dateIso, now.toISOString()]);
 
-            // Reset Input Form
+            activeTransactionId = id;
+            localStorage.setItem('kopra_active_id', activeTransactionId);
+
+            await persistDatabase();
+
             document.getElementById('input-plate').value = '';
             document.getElementById('input-driver').value = '';
 
             updateAppView();
+            renderStats();
         }
 
-        // Direct Batch Add
+        // Add Batch Timbangan
+        async function addBatch(weight) {
+            if (!activeTransactionId || !db) return;
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            db.run(`
+                INSERT INTO weighing_batches (trx_id, weight, time, created_at)
+                VALUES (?, ?, ?, ?)
+            `, [activeTransactionId, weight, timeStr, Date.now()]);
+
+            await persistDatabase();
+            updateAppView();
+            renderStats();
+        }
+
+        function addQuickBatch(weight) {
+            addBatch(weight);
+        }
+
         function handleDirectBatchSubmit(e) {
             e.preventDefault();
             const input = document.getElementById('input-batch-weight');
             const weight = parseFloat(input.value);
 
-            if (!weight || weight <= 0 || !activeTransactionId) return;
+            if (!weight || weight <= 0) return;
 
-            const trx = transactions.find(t => t.id === activeTransactionId);
-            if (trx) {
-                const now = new Date();
-                trx.batches.unshift({
-                    id: Date.now(),
-                    weight: weight,
-                    time: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                });
-
-                saveState();
-                updateAppView();
-                input.value = '';
-                input.focus();
-            }
+            addBatch(weight);
+            input.value = '';
+            input.focus();
         }
 
-        // Delete Individual Batch
-        function deleteBatch(batchId) {
-            const trx = transactions.find(t => t.id === activeTransactionId);
-            if (trx) {
-                trx.batches = trx.batches.filter(b => b.id !== batchId);
-                saveState();
-                updateAppView();
-            }
+        // Delete Batch
+        async function deleteBatch(batchId) {
+            if (!db) return;
+            db.run(`DELETE FROM weighing_batches WHERE id = ?`, [batchId]);
+            await persistDatabase();
+            updateAppView();
+            renderStats();
         }
 
-        // Finish Transaction & Log Time Out
-        function finishTransaction() {
-            const trx = transactions.find(t => t.id === activeTransactionId);
+        // Finish Transaction
+        async function finishTransaction() {
+            if (!activeTransactionId || !db) return;
+
+            const trx = getTransactionById(activeTransactionId);
             if (!trx) return;
 
             if (trx.batches.length === 0) {
@@ -839,15 +1009,21 @@
             }
 
             if (confirm(`Selesaikan penimbangan untuk ${trx.plate}?`)) {
-                trx.timeOut = new Date().toISOString();
-                trx.status = 'COMPLETED';
-                
+                const now = new Date();
+                db.run(`
+                    UPDATE transactions 
+                    SET time_out = ?, status = 'COMPLETED'
+                    WHERE id = ?
+                `, [now.toISOString(), activeTransactionId]);
+
                 const finishedId = activeTransactionId;
                 activeTransactionId = null;
-                saveState();
+                localStorage.removeItem('kopra_active_id');
+
+                await persistDatabase();
                 updateAppView();
-                
-                // Show Struk
+                renderStats();
+
                 openReceiptModal(finishedId);
             }
         }
@@ -857,21 +1033,20 @@
             const sectionNew = document.getElementById('section-new-entry');
             const sectionWeighing = document.getElementById('section-weighing');
 
-            const activeTrx = transactions.find(t => t.id === activeTransactionId && t.status === 'ACTIVE');
+            const activeTrx = activeTransactionId ? getTransactionById(activeTransactionId) : null;
 
-            if (activeTrx) {
+            if (activeTrx && activeTrx.status === 'ACTIVE') {
                 sectionNew.classList.add('hidden');
                 sectionWeighing.classList.remove('hidden');
 
                 document.getElementById('active-plate').innerText = activeTrx.plate;
                 document.getElementById('active-driver').innerText = activeTrx.driver;
                 document.getElementById('active-receiver').innerText = activeTrx.receiver;
-                document.getElementById('active-time-in').innerText = new Date(activeTrx.timeIn).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('active-time-in').innerText = new Date(activeTrx.time_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
                 const totalWeight = activeTrx.batches.reduce((sum, b) => sum + b.weight, 0);
                 document.getElementById('active-total').innerText = totalWeight.toLocaleString('id-ID');
 
-                // Render Batch Items
                 const batchListEl = document.getElementById('active-batch-list');
                 batchListEl.innerHTML = '';
 
@@ -895,58 +1070,86 @@
             }
         }
 
-        // Render Header Stats
+        // Render Header Stats From SQLite Database
         function renderStats() {
-            const todayStr = new Date().toISOString().slice(0, 10);
-            const todayTrx = transactions.filter(t => new Date(t.timeIn).toISOString().slice(0, 10) === todayStr);
+            if (!db) return;
 
-            const activeCount = transactions.filter(t => t.status === 'ACTIVE').length;
-            const completedCount = todayTrx.filter(t => t.status === 'COMPLETED').length;
+            const selectedDate = document.getElementById('history-date').value || new Date().toISOString().slice(0, 10);
 
-            let totalWeightToday = 0;
-            todayTrx.forEach(t => {
-                totalWeightToday += t.batches.reduce((sum, b) => sum + b.weight, 0);
-            });
+            // Active Count (Global)
+            const activeRes = db.exec(`SELECT COUNT(*) as count FROM transactions WHERE status = 'ACTIVE'`);
+            const activeCount = activeRes.length ? activeRes[0].values[0][0] : 0;
 
-            document.getElementById('stat-total').innerText = `${totalWeightToday.toLocaleString('id-ID')} Kg`;
+            // Completed Count For Selected Date
+            const completedRes = db.exec(`SELECT COUNT(*) as count FROM transactions WHERE status = 'COMPLETED' AND date_entry = '${selectedDate}'`);
+            const completedCount = completedRes.length ? completedRes[0].values[0][0] : 0;
+
+            // Total Weight For Selected Date
+            const weightRes = db.exec(`
+                SELECT SUM(b.weight) as total 
+                FROM weighing_batches b
+                JOIN transactions t ON b.trx_id = t.id
+                WHERE t.status = 'COMPLETED' AND t.date_entry = '${selectedDate}'
+            `);
+            const totalWeight = (weightRes.length && weightRes[0].values[0][0]) ? weightRes[0].values[0][0] : 0;
+
+            document.getElementById('stat-total').innerText = `${totalWeight.toLocaleString('id-ID')} Kg`;
             document.getElementById('stat-active').innerText = activeCount;
             document.getElementById('stat-completed').innerText = completedCount;
         }
 
-        // Render History List
+        // Render History List With Date Filter
         function renderHistory() {
+            if (!db) return;
+
+            renderStats();
+
             const historyEl = document.getElementById('history-list');
             historyEl.innerHTML = '';
 
-            const completedTrx = transactions.filter(t => t.status === 'COMPLETED');
+            const dateFilter = document.getElementById('history-date').value;
 
-            if (completedTrx.length === 0) {
-                historyEl.innerHTML = '<div class="empty-state">Belum ada riwayat timbangan selesai hari ini.</div>';
+            let query = `SELECT * FROM transactions WHERE status = 'COMPLETED'`;
+            if (dateFilter) {
+                query += ` AND date_entry = '${dateFilter}'`;
+            }
+            query += ` ORDER BY rowid DESC`;
+
+            const stmt = db.prepare(query);
+            const list = [];
+            while (stmt.step()) {
+                list.push(stmt.getAsObject());
+            }
+            stmt.free();
+
+            if (list.length === 0) {
+                historyEl.innerHTML = `<div class="empty-state">Tidak ada riwayat timbangan selesai ${dateFilter ? 'pada tanggal ' + dateFilter : ''}.</div>`;
                 return;
             }
 
-            completedTrx.forEach(t => {
-                const totalWeight = t.batches.reduce((sum, b) => sum + b.weight, 0);
-                const tIn = new Date(t.timeIn).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                const tOut = t.timeOut ? new Date(t.timeOut).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+            list.forEach(t => {
+                const trx = getTransactionById(t.id);
+                const totalWeight = trx.batches.reduce((sum, b) => sum + b.weight, 0);
+                const tIn = new Date(trx.time_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                const tOut = trx.time_out ? new Date(trx.time_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
 
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
                     <div class="card-header">
-                        <span class="plate-badge">${t.plate}</span>
+                        <span class="plate-badge">${trx.plate}</span>
                         <span style="font-weight: 800; font-size: 1rem; color: var(--primary);">${totalWeight.toLocaleString('id-ID')} Kg</span>
                     </div>
                     <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span>Supir: ${t.driver}</span>
-                        <span>Penerima: ${t.receiver}</span>
+                        <span>Supir: ${trx.driver}</span>
+                        <span>Penerima: ${trx.receiver}</span>
                     </div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-top: 1px dashed #e2e8f0; padding-top: 8px; gap: 6px;">
-                        <span>Jam: ${tIn} - ${tOut} (${t.batches.length} Batch)</span>
+                        <span>Tgl: ${trx.date_entry} | Jam: ${tIn}-${tOut} (${trx.batches.length} Batch)</span>
                         <div style="display: flex; gap: 4px;">
-                            <button onclick="downloadItemPNG('${t.id}')" style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.7rem;">PNG</button>
-                            <button onclick="downloadItemPDF('${t.id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.7rem;">PDF</button>
-                            <button onclick="openReceiptModal('${t.id}')" style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.7rem;">Nota</button>
+                            <button onclick="downloadItemPNG('${trx.id}')" style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.7rem;">PNG</button>
+                            <button onclick="downloadItemPDF('${trx.id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.7rem;">PDF</button>
+                            <button onclick="openReceiptModal('${trx.id}')" style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.7rem;">Nota</button>
                         </div>
                     </div>
                 `;
@@ -954,11 +1157,16 @@
             });
         }
 
+        function resetDateFilter() {
+            document.getElementById('history-date').value = '';
+            renderHistory();
+        }
+
         // Receipt Modal Logic
         let currentReceiptTrx = null;
 
         function openReceiptModal(id) {
-            currentReceiptTrx = transactions.find(t => t.id === id);
+            currentReceiptTrx = getTransactionById(id);
             if (!currentReceiptTrx) return;
 
             const trx = currentReceiptTrx;
@@ -966,13 +1174,12 @@
             document.getElementById('r-plate').innerText = trx.plate;
             document.getElementById('r-driver').innerText = trx.driver;
             document.getElementById('r-receiver').innerText = trx.receiver;
-            document.getElementById('r-in').innerText = new Date(trx.timeIn).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('r-out').innerText = trx.timeOut ? new Date(trx.timeOut).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+            document.getElementById('r-in').innerText = new Date(trx.time_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('r-out').innerText = trx.time_out ? new Date(trx.time_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
 
             const batchesEl = document.getElementById('r-batches');
             batchesEl.innerHTML = '';
             let total = 0;
-            // Diurutkan dari batch awal (kronologis)
             const chronologicalBatches = [...trx.batches].reverse();
             chronologicalBatches.forEach((b, i) => {
                 total += b.weight;
@@ -990,16 +1197,11 @@
             document.getElementById('modal-receipt').classList.add('hidden');
         }
 
-        // Print Native
         function printReceipt() {
             window.print();
         }
 
-        // ===============================================
-        // VANILLA CANVAS-BASED GENERATOR UNTUK PNG & PDF
-        // ===============================================
-
-        // Helper untuk menggambar Nota Struk ke Canvas
+        // Export Canvas Functions
         function drawReceiptToCanvas(trx) {
             const canvas = document.getElementById('export-canvas');
             const ctx = canvas.getContext('2d');
@@ -1011,16 +1213,13 @@
             canvas.width = width;
             canvas.height = height;
 
-            // Background
             ctx.fillStyle = '#fffbeb';
             ctx.fillRect(0, 0, width, height);
 
-            // Border
             ctx.strokeStyle = '#d97706';
             ctx.lineWidth = 4;
             ctx.strokeRect(10, 10, width - 20, height - 20);
 
-            // Header
             ctx.fillStyle = '#0f172a';
             ctx.font = 'bold 20px sans-serif';
             ctx.textAlign = 'center';
@@ -1030,7 +1229,6 @@
             ctx.fillStyle = '#64748b';
             ctx.fillText('Nota Penerimaan Kelapa Butir', width / 2, 68);
 
-            // Line Separator
             ctx.strokeStyle = '#cbd5e1';
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -1040,14 +1238,13 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Details
             ctx.textAlign = 'left';
             ctx.font = '14px monospace';
             ctx.fillStyle = '#1e293b';
 
             let y = 110;
-            const tIn = new Date(trx.timeIn).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            const tOut = trx.timeOut ? new Date(trx.timeOut).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+            const tIn = new Date(trx.time_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const tOut = trx.time_out ? new Date(trx.time_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
 
             const details = [
                 ['No. Nota', ': #' + trx.id],
@@ -1058,13 +1255,11 @@
             ];
 
             details.forEach(([lbl, val]) => {
-                ctx.fontWeight = 'bold';
                 ctx.fillText(lbl.padEnd(18, ' '), 35, y);
                 ctx.fillText(val, 180, y);
                 y += 24;
             });
 
-            // Line Separator
             ctx.beginPath();
             ctx.setLineDash([5, 5]);
             ctx.moveTo(30, y);
@@ -1079,7 +1274,6 @@
 
             ctx.font = '13px monospace';
             let total = 0;
-            // Diurutkan dari batch 1 sampai akhir untuk nota ekspor
             const chronologicalBatches = [...trx.batches].reverse();
             chronologicalBatches.forEach((b, idx) => {
                 total += b.weight;
@@ -1090,7 +1284,6 @@
                 y += 22;
             });
 
-            // Total Line
             y += 6;
             ctx.strokeStyle = '#0f172a';
             ctx.lineWidth = 2;
@@ -1109,25 +1302,31 @@
             return canvas;
         }
 
-        // Helper untuk Menggambar Rekapitulasi Laporan Keseluruhan ke Canvas
         function drawSummaryToCanvas() {
             const canvas = document.getElementById('export-canvas');
             const ctx = canvas.getContext('2d');
 
-            const completedTrx = transactions.filter(t => t.status === 'COMPLETED');
-            const todayStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const dateFilter = document.getElementById('history-date').value;
+            let query = `SELECT * FROM transactions WHERE status = 'COMPLETED'`;
+            if (dateFilter) query += ` AND date_entry = '${dateFilter}'`;
+            query += ` ORDER BY rowid ASC`;
+
+            const stmt = db.prepare(query);
+            const list = [];
+            while (stmt.step()) list.push(stmt.getAsObject());
+            stmt.free();
+
+            const titleDate = dateFilter || 'Semua Tanggal';
 
             const width = 600;
-            const height = 260 + (completedTrx.length * 28);
+            const height = 260 + (list.length * 28);
 
             canvas.width = width;
             canvas.height = height;
 
-            // Background
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, width, height);
 
-            // Header Banner
             ctx.fillStyle = '#065f46';
             ctx.fillRect(0, 0, width, 80);
 
@@ -1138,12 +1337,12 @@
 
             ctx.font = '13px sans-serif';
             ctx.fillStyle = '#f59e0b';
-            ctx.fillText(`Tanggal: ${todayStr}`, 24, 62);
+            ctx.fillText(`Filter Tanggal: ${titleDate}`, 24, 62);
 
-            // Summary Totals
             let grandTotalKg = 0;
-            completedTrx.forEach(t => {
-                grandTotalKg += t.batches.reduce((sum, b) => sum + b.weight, 0);
+            list.forEach(t => {
+                const trx = getTransactionById(t.id);
+                grandTotalKg += trx.batches.reduce((sum, b) => sum + b.weight, 0);
             });
 
             ctx.fillStyle = '#f8fafc';
@@ -1153,13 +1352,12 @@
 
             ctx.fillStyle = '#0f172a';
             ctx.font = 'bold 13px sans-serif';
-            ctx.fillText(`Total Transaksi: ${completedTrx.length} Kendaraan`, 35, 125);
+            ctx.fillText(`Total Transaksi: ${list.length} Kendaraan`, 35, 125);
             ctx.textAlign = 'right';
             ctx.fillStyle = '#065f46';
             ctx.font = 'bold 16px sans-serif';
             ctx.fillText(`Total Akumulasi: ${grandTotalKg.toLocaleString('id-ID')} Kg`, width - 35, 125);
 
-            // Table Header
             let y = 175;
             ctx.fillStyle = '#0f172a';
             ctx.fillRect(20, y, width - 40, 26);
@@ -1177,20 +1375,21 @@
             y += 26;
             ctx.font = '12px sans-serif';
 
-            completedTrx.forEach((t, i) => {
+            list.forEach((t, i) => {
+                const trx = getTransactionById(t.id);
                 ctx.fillStyle = (i % 2 === 0) ? '#ffffff' : '#f1f5f9';
                 ctx.fillRect(20, y, width - 40, 28);
 
                 ctx.fillStyle = '#0f172a';
                 ctx.textAlign = 'left';
 
-                const totalKg = t.batches.reduce((sum, b) => sum + b.weight, 0);
-                const tIn = new Date(t.timeIn).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                const tOut = t.timeOut ? new Date(t.timeOut).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+                const totalKg = trx.batches.reduce((sum, b) => sum + b.weight, 0);
+                const tIn = new Date(trx.time_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                const tOut = trx.time_out ? new Date(trx.time_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
 
-                ctx.fillText(t.plate, 30, y + 18);
-                ctx.fillText(t.driver.slice(0, 12), 130, y + 18);
-                ctx.fillText(t.receiver.slice(0, 12), 250, y + 18);
+                ctx.fillText(trx.plate, 30, y + 18);
+                ctx.fillText(trx.driver.slice(0, 12), 130, y + 18);
+                ctx.fillText(trx.receiver.slice(0, 12), 250, y + 18);
                 ctx.fillText(`${tIn}-${tOut}`, 360, y + 18);
                 ctx.textAlign = 'right';
                 ctx.font = 'bold 12px sans-serif';
@@ -1203,15 +1402,10 @@
             return canvas;
         }
 
-        // Helper untuk Mengubah Canvas ke Formated Single-Page Minimalist PDF murni (Offline Vanilla PDF Binary Generator)
         function downloadCanvasAsPDF(canvas, filename) {
             const imgData = canvas.toDataURL('image/jpeg', 0.92);
-            
-            // Konversi gambar canvas ke Format Minimalist PDF Data URI tanpa library luar
             const w = canvas.width * 0.75;
-            const h = canvas.height * 0.75;
 
-            // Membuka jendela dialog cetak/pdf browser dengan gambar canvas terformat presisi
             const printWin = window.open('', '_blank');
             if (printWin) {
                 printWin.document.write(`
@@ -1239,7 +1433,6 @@
                 `);
                 printWin.document.close();
             } else {
-                // Fallback direct download PNG jika pop-up terblokir
                 const a = document.createElement('a');
                 a.href = imgData;
                 a.download = filename.replace('.pdf', '.jpg');
@@ -1247,7 +1440,6 @@
             }
         }
 
-        // Action Handlers
         function downloadReceiptPNG() {
             if (!currentReceiptTrx) return;
             const canvas = drawReceiptToCanvas(currentReceiptTrx);
@@ -1264,7 +1456,7 @@
         }
 
         function downloadItemPNG(id) {
-            const trx = transactions.find(t => t.id === id);
+            const trx = getTransactionById(id);
             if (!trx) return;
             const canvas = drawReceiptToCanvas(trx);
             const a = document.createElement('a');
@@ -1274,7 +1466,7 @@
         }
 
         function downloadItemPDF(id) {
-            const trx = transactions.find(t => t.id === id);
+            const trx = getTransactionById(id);
             if (!trx) return;
             const canvas = drawReceiptToCanvas(trx);
             downloadCanvasAsPDF(canvas, `Nota_${trx.plate}_${trx.id}.pdf`);
@@ -1282,50 +1474,51 @@
 
         function exportSummaryPNG() {
             document.getElementById('export-menu').classList.add('hidden');
-            const completed = transactions.filter(t => t.status === 'COMPLETED');
-            if (completed.length === 0) {
-                alert('Belum ada data transaksi yang selesai!');
-                return;
-            }
             const canvas = drawSummaryToCanvas();
             const a = document.createElement('a');
             a.href = canvas.toDataURL('image/png');
-            a.download = `Rekap_Kopra_${new Date().toISOString().slice(0,10)}.png`;
+            a.download = `Rekap_Kopra_${document.getElementById('history-date').value || 'Semua'}.png`;
             a.click();
         }
 
         function exportSummaryPDF() {
             document.getElementById('export-menu').classList.add('hidden');
-            const completed = transactions.filter(t => t.status === 'COMPLETED');
-            if (completed.length === 0) {
-                alert('Belum ada data transaksi yang selesai!');
-                return;
-            }
             const canvas = drawSummaryToCanvas();
-            downloadCanvasAsPDF(canvas, `Laporan_Rekap_Kopra_${new Date().toISOString().slice(0,10)}.pdf`);
+            downloadCanvasAsPDF(canvas, `Laporan_Rekap_Kopra_${document.getElementById('history-date').value || 'Semua'}.pdf`);
         }
 
-        // Export Data CSV
         function exportCSV() {
             document.getElementById('export-menu').classList.add('hidden');
-            if (transactions.length === 0) {
-                alert('Tidak ada data transaksi!');
+            if (!db) return;
+
+            const dateFilter = document.getElementById('history-date').value;
+            let query = `SELECT * FROM transactions`;
+            if (dateFilter) query += ` WHERE date_entry = '${dateFilter}'`;
+
+            const stmt = db.prepare(query);
+            const list = [];
+            while (stmt.step()) list.push(stmt.getAsObject());
+            stmt.free();
+
+            if (list.length === 0) {
+                alert('Tidak ada data transaksi untuk diekspor!');
                 return;
             }
 
-            let csv = 'ID,No Pelat,Supir,Penerima,Jam Masuk,Jam Keluar,Status,Total Batch,Total Berat (Kg)\n';
-            transactions.forEach(t => {
-                const total = t.batches.reduce((sum, b) => sum + b.weight, 0);
-                const tIn = new Date(t.timeIn).toLocaleString('id-ID');
-                const tOut = t.timeOut ? new Date(t.timeOut).toLocaleString('id-ID') : '-';
-                csv += `"${t.id}","${t.plate}","${t.driver}","${t.receiver}","${tIn}","${tOut}","${t.status}",${t.batches.length},${total}\n`;
+            let csv = 'ID,Tanggal,No Pelat,Supir,Penerima,Jam Masuk,Jam Keluar,Status,Total Batch,Total Berat (Kg)\n';
+            list.forEach(t => {
+                const trx = getTransactionById(t.id);
+                const total = trx.batches.reduce((sum, b) => sum + b.weight, 0);
+                const tIn = new Date(trx.time_in).toLocaleString('id-ID');
+                const tOut = trx.time_out ? new Date(trx.time_out).toLocaleString('id-ID') : '-';
+                csv += `"${trx.id}","${trx.date_entry}","${trx.plate}","${trx.driver}","${trx.receiver}","${tIn}","${tOut}","${trx.status}",${trx.batches.length},${total}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Penerimaan_Kelapa_${new Date().toISOString().slice(0,10)}.csv`;
+            a.download = `Penerimaan_Kelapa_${dateFilter || 'Semua'}.csv`;
             a.click();
             URL.revokeObjectURL(url);
         }
