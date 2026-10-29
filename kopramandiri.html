@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Penerimaan Kelapa Kopra</title>
+    <style>
+        /* CSS Reset & Variable Theme */
+        :root {
+            --bg-main: #f1f5f9;
+            --primary: #065f46;
+            --primary-dark: #044e38;
+            --accent: #f59e0b;
+            --accent-hover: #d97706;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --border-color: #cbd5e1;
+            --danger: #dc2626;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--card-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* Header UI */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .brand-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-sub {
+            font-size: 0.75rem;
+            opacity: 0.85;
+        }
+
+        .btn-export {
+            background-color: var(--accent);
+            color: #1e1b4b;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 105%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 30;
+            min-width: 130px;
+            border: 1px solid var(--border-color);
+        }
+
+        .dropdown-menu button {
+            padding: 10px 12px;
+            border: none;
+            background: transparent;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: var(--text-main);
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .dropdown-menu button:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-menu button:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+
+        .btn-export:active {
+            background-color: var(--accent-hover);
+            transform: scale(0.97);
+        }
+
+        /* Header Summary Stats */
+        .header-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card .label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.8;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .stat-card .value {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--accent);
+        }
+
+        /* Navigation Tabs */
+        .tab-nav {
+            display: flex;
+            background: #e2e8f0;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: var(--card-bg);
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Content Area */
+        main {
+            flex: 1;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Form Controls */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(6, 95, 70, 0.3);
+        }
+
+        .btn-submit:active {
+            background-color: var(--primary-dark);
+            transform: scale(0.99);
+        }
+
+        /* Cards & Active Panel */
+        .card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .plate-badge {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: 900;
+            font-size: 1rem;
+            letter-spacing: 0.05em;
+        }
+
+        .accumulated-box {
+            background: #0f172a;
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .accumulated-box .val {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--accent);
+            line-height: 1.1;
+        }
+
+        /* Direct Weighing Input */
+        .direct-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .direct-input-group input {
+            flex: 1;
+            font-size: 1.3rem;
+            font-weight: 900;
+            text-align: right;
+            padding: 10px;
+            background: #fffbe2;
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+        }
+
+        .direct-input-group button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        /* Preset Quick Buttons */
+        .quick-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .btn-quick {
+            background: #e2e8f0;
+            color: #0f172a;
+            border: 2px solid #cbd5e1;
+            padding: 12px 0;
+            border-radius: 10px;
+            font-weight: 900;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.1s;
+        }
+
+        .btn-quick:active {
+            background: var(--accent);
+            color: #1e1b4b;
+            border-color: var(--accent-hover);
+            transform: scale(0.96);
+        }
+
+        /* Batch List Items */
+        .batch-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            padding-right: 4px;
+        }
+
+        .batch-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+        }
+
+        .batch-item .del-btn {
+            background: #fee2e2;
+            color: var(--danger);
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-finish {
+            width: 100%;
+            background-color: var(--accent);
+            color: #1e1b4b;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Modal Struk & Receipt */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(2px);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-card {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        .modal-header {
+            background: var(--primary);
+            color: white;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .modal-body {
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Format Struk Nota Paper Style */
+        .receipt-paper {
+            background: #fffbeb;
+            border: 1px dashed #d97706;
+            padding: 16px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #1e293b;
+        }
+
+        .receipt-paper h3 {
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 900;
+            margin-bottom: 2px;
+        }
+
+        .receipt-paper .sub {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 8px;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .receipt-divider {
+            border-top: 1px dashed #cbd5e1;
+            margin: 8px 0;
+        }
+
+        .receipt-total {
+            font-size: 1rem;
+            font-weight: 900;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 2px solid #0f172a;
+        }
+
+        .modal-actions {
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .btn-png { background: #10b981; color: white; }
+        .btn-pdf { background: #ef4444; color: white; }
+        .btn-close { background: #cbd5e1; color: #1e293b; }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 16px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        .text-emerald { color: var(--primary); }
+        .font-bold { font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header Utama -->
+        <header>
+            <div class="header-top">
+                <div>
+                    <div class="brand-title">KOPRA MANDIRI</div>
+                    <div class="brand-sub">Penerimaan Kelapa Butir</div>
+                </div>
+                <div class="export-dropdown">
+                    <button onclick="toggleExportMenu()" class="btn-export">
+                        <span>📊</span>
+                        <span>Ekspor Rekap ▾</span>
+                    </button>
+                    <div id="export-menu" class="dropdown-menu hidden">
+                        <button onclick="exportSummaryPNG()">📸 Rekap Gambar (PNG)</button>
+                        <button onclick="exportSummaryPDF()">📄 Rekap Dokumen (PDF)</button>
+                        <button onclick="exportCSV()">📁 File Data (CSV)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rekapitulasi Ringkas -->
+            <div class="header-stats">
+                <div class="stat-card">
+                    <span class="label">Total Hari Ini</span>
+                    <span id="stat-total" class="value">0 Kg</span>
+                </div>
+                <div class="stat-card">
+                    <span class="label">Proses</span>
+                    <span id="stat-active" class="value" style="color: white;">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="label">Selesai</span>
+                    <span id="stat-completed" class="value" style="color: #6ee7b7;">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-nav">
+            <button id="tab-btn-form" onclick="switchTab('form')" class="tab-btn active">Timbang / Masuk</button>
+            <button id="tab-btn-history" onclick="switchTab('history')" class="tab-btn">Riwayat Hari Ini</button>
+        </div>
+
+        <!-- Main Content -->
+        <main>
+            <!-- TAB 1: FORM INPUT & PROSES TIMBANG -->
+            <div id="view-form">
+                <!-- Jika belum ada kendaraan aktif, tampilkan form masuk -->
+                <div id="section-new-entry" class="card">
+                    <h2 style="font-size: 1rem; margin-bottom: 12px; color: var(--primary); font-weight: 800;">Registrasi Masuk Kendaraan</h2>
+                    
+                    <form onsubmit="handleStartEntry(event)">
+                        <div class="form-group">
+                            <label>Nomor Pelat Kendaraan *</label>
+                            <input type="text" id="input-plate" required placeholder="Contoh: DB 8123 AB" class="form-control" style="text-transform: uppercase;">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nama Supir (Opsional)</label>
+                            <input type="text" id="input-driver" placeholder="Contoh: Pak Budi" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Petugas Penerima *</label>
+                            <input type="text" id="input-receiver" required placeholder="Nama Penerima / Timbang" class="form-control">
+                        </div>
+
+                        <button type="submit" class="btn-submit">MULAI PENIMBANGAN</button>
+                    </form>
+                </div>
+
+                <!-- Panel Timbang Aktif (Muncul saat kendaraan dalam proses) -->
+                <div id="section-weighing" class="card hidden">
+                    <div class="card-header">
+                        <span id="active-plate" class="plate-badge">DB ---- XX</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Masuk: <b id="active-time-in">00:00</b></span>
+                    </div>
+
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+                        Supir: <b id="active-driver" style="color: var(--text-main);">-</b> | Penerima: <b id="active-receiver" style="color: var(--text-main);">-</b>
+                    </div>
+
+                    <!-- Display Total Akumulasi -->
+                    <div class="accumulated-box">
+                        <span style="font-size: 0.75rem; text-transform: uppercase; opacity: 0.8; display: block; margin-bottom: 4px;">Total Akumulasi Berat</span>
+                        <div id="active-total" class="val">0</div>
+                        <span style="font-size: 0.8rem; opacity: 0.8;">Kilogram (Kg)</span>
+                    </div>
+
+                    <!-- Tombol Cepat Timbangan Preset -->
+                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                        Tombol Cepat Timbangan:
+                    </label>
+                    <div class="quick-buttons-grid">
+                        <button type="button" class="btn-quick" onclick="addQuickBatch(10)">+10kg</button>
+                        <button type="button" class="btn-quick" onclick="addQuickBatch(20)">+20kg</button>
+                        <button type="button" class="btn-quick" onclick="addQuickBatch(50)">+50kg</button>
+                        <button type="button" class="btn-quick" onclick="addQuickBatch(100)">+100kg</button>
+                    </div>
+
+                    <!-- Input Manual & Tombol Tambah -->
+                    <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 4px;">
+                        Input Manual (Kustom Kg):
+                    </label>
+                    <form onsubmit="handleDirectBatchSubmit(event)" class="direct-input-group">
+                        <input type="number" id="input-batch-weight" placeholder="0" step="0.1" min="0.1">
+                        <button type="submit">TAMBAH</button>
+                    </form>
+
+                    <!-- Batch List -->
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+                        Rincian Batch Parsial:
+                    </div>
+                    <div id="active-batch-list" class="batch-list">
+                        <!-- Injected by JS -->
+                    </div>
+
+                    <button onclick="finishTransaction()" class="btn-finish">SELESAI & CATAT JAM KELUAR</button>
+                </div>
+            </div>
+
+            <!-- TAB 2: RIWAYAT HARI INI -->
+            <div id="view-history" class="hidden">
+                <div id="history-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL STRUK / NOTA -->
+    <div id="modal-receipt" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span>Struk Penerimaan Kelapa</span>
+                <span onclick="closeReceiptModal()" style="cursor: pointer; font-size: 1.2rem;">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="receipt-paper" class="receipt-paper">
+                    <h3>PENJEMURAN KOPRA</h3>
+                    <div class="sub">Nota Penerimaan Kelapa Butir</div>
+
+                    <div class="receipt-row"><span>No Nota:</span><b id="r-id">#0000</b></div>
+                    <div class="receipt-row"><span>No. Pelat:</span><b id="r-plate">--</b></div>
+                    <div class="receipt-row"><span>Supir:</span><span id="r-driver">--</span></div>
+                    <div class="receipt-row"><span>Penerima:</span><span id="r-receiver">--</span></div>
+                    <div class="receipt-row"><span>Jam Masuk:</span><span id="r-in">--</span></div>
+                    <div class="receipt-row"><span>Jam Keluar:</span><span id="r-out">--</span></div>
+
+                    <div class="receipt-divider"></div>
+                    <div style="font-weight: bold; margin-bottom: 4px;">Rincian Timbangan (Kg):</div>
+                    <div id="r-batches"></div>
+
+                    <div class="receipt-total">
+                        <span>TOTAL NETTO:</span>
+                        <span id="r-total">0 Kg</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button onclick="downloadReceiptPNG()" class="btn-action btn-png">PNG</button>
+                <button onclick="downloadReceiptPDF()" class="btn-action btn-pdf">PDF</button>
+                <button onclick="printReceipt()" class="btn-action" style="background: #3b82f6; color: white;">Cetak</button>
+                <button onclick="closeReceiptModal()" class="btn-action btn-close">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Canvas For PDF/PNG Generation -->
+    <canvas id="export-canvas" style="display: none;"></canvas>
+
+    <script>
+        // State Application
+        let transactions = JSON.parse(localStorage.getItem('kopra_transactions')) || [];
+        let activeTransactionId = localStorage.getItem('kopra_active_id') || null;
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAppView();
+            renderStats();
+            
+            // Close dropdown menu when clicked outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.export-dropdown')) {
+                    document.getElementById('export-menu').classList.add('hidden');
+                }
+            });
+        });
+
+        function toggleExportMenu() {
+            document.getElementById('export-menu').classList.toggle('hidden');
+        }
+
+        function saveState() {
+            localStorage.setItem('kopra_transactions', JSON.stringify(transactions));
+            if (activeTransactionId) {
+                localStorage.setItem('kopra_active_id', activeTransactionId);
+            } else {
+                localStorage.removeItem('kopra_active_id');
+            }
+            renderStats();
+        }
+
+        // Add Quick Preset Batch Directly
+        function addQuickBatch(weight) {
+            if (!activeTransactionId) return;
+
+            const trx = transactions.find(t => t.id === activeTransactionId);
+            if (trx) {
+                const now = new Date();
+                trx.batches.unshift({
+                    id: Date.now(),
+                    weight: weight,
+                    time: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                });
+
+                saveState();
+                updateAppView();
+            }
+        }
+
+        // Switch View Tabs
+        function switchTab(tab) {
+            document.getElementById('tab-btn-form').classList.toggle('active', tab === 'form');
+            document.getElementById('tab-btn-history').classList.toggle('active', tab === 'history');
+            
+            document.getElementById('view-form').classList.toggle('hidden', tab !== 'form');
+            document.getElementById('view-history').classList.toggle('hidden', tab !== 'history');
+
+            if (tab === 'history') {
+                renderHistory();
+            }
+        }
+
+        // Form Registration Start
+        function handleStartEntry(e) {
+            e.preventDefault();
+            const plate = document.getElementById('input-plate').value.trim().toUpperCase();
+            const driver = document.getElementById('input-driver').value.trim() || '-';
+            const receiver = document.getElementById('input-receiver').value.trim();
+
+            if (!plate || !receiver) return;
+
+            const now = new Date();
+            const newTrx = {
+                id: 'TRX-' + Date.now().toString().slice(-6),
+                plate: plate,
+                driver: driver,
+                receiver: receiver,
+                timeIn: now.toISOString(),
+                timeOut: null,
+                status: 'ACTIVE',
+                batches: []
+            };
+
+            transactions.unshift(newTrx);
+            activeTransactionId = newTrx.id;
+            saveState();
+
+            // Reset Input Form
+            document.getElementById('input-plate').value = '';
+            document.getElementById('input-driver').value = '';
+
+            updateAppView();
+        }
+
+        // Direct Batch Add
+        function handleDirectBatchSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('input-batch-weight');
+            const weight = parseFloat(input.value);
+
+            if (!weight || weight <= 0 || !activeTransactionId) return;
+
+            const trx = transactions.find(t => t.id === activeTransactionId);
+            if (trx) {
+                const now = new Date();
+                trx.batches.unshift({
+                    id: Date.now(),
+                    weight: weight,
+                    time: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                });
+
+                saveState();
+                updateAppView();
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // Delete Individual Batch
+        function deleteBatch(batchId) {
+            const trx = transactions.find(t => t.id === activeTransactionId);
+            if (trx) {
+                trx.batches = trx.batches.filter(b => b.id !== batchId);
+                saveState();
+                updateAppView();
+            }
+        }
+
+        // Finish Transaction & Log Time Out
+        function finishTransaction() {
+            const trx = transactions.find(t => t.id === activeTransactionId);
+            if (!trx) return;
+
+            if (trx.batches.length === 0) {
+                alert('Belum ada data timbangan yang dimasukkan!');
+                return;
+            }
+
+            if (confirm(`Selesaikan penimbangan untuk ${trx.plate}?`)) {
+                trx.timeOut = new Date().toISOString();
+                trx.status = 'COMPLETED';
+                
+                const finishedId = activeTransactionId;
+                activeTransactionId = null;
+                saveState();
+                updateAppView();
+                
+                // Show Struk
+                openReceiptModal(finishedId);
+            }
+        }
+
+        // Render Active Views
+        function updateAppView() {
+            const sectionNew = document.getElementById('section-new-entry');
+            const sectionWeighing = document.getElementById('section-weighing');
+
+            const activeTrx = transactions.find(t => t.id === activeTransactionId && t.status === 'ACTIVE');
+
+            if (activeTrx) {
+                sectionNew.classList.add('hidden');
+                sectionWeighing.classList.remove('hidden');
+
+                document.getElementById('active-plate').innerText = activeTrx.plate;
+                document.getElementById('active-driver').innerText = activeTrx.driver;
+                document.getElementById('active-receiver').innerText = activeTrx.receiver;
+                document.getElementById('active-time-in').innerText = new Date(activeTrx.timeIn).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+                const totalWeight = activeTrx.batches.reduce((sum, b) => sum + b.weight, 0);
+                document.getElementById('active-total').innerText = totalWeight.toLocaleString('id-ID');
+
+                // Render Batch Items
+                const batchListEl = document.getElementById('active-batch-list');
+                batchListEl.innerHTML = '';
+
+                activeTrx.batches.forEach((b, idx) => {
+                    const item = document.createElement('div');
+                    item.className = 'batch-item';
+                    item.innerHTML = `
+                        <div>
+                            <b>Batch ${activeTrx.batches.length - idx}</b> <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">(${b.time})</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-weight: 800; font-size: 0.95rem;">${b.weight.toLocaleString('id-ID')} Kg</span>
+                            <button onclick="deleteBatch(${b.id})" class="del-btn" title="Hapus">&times;</button>
+                        </div>
+                    `;
+                    batchListEl.appendChild(item);
+                });
+            } else {
+                sectionNew.classList.remove('hidden');
+                sectionWeighing.classList.add('hidden');
+            }
+        }
+
+        // Render Header Stats
+        function renderStats() {
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const todayTrx = transactions.filter(t => new Date(t.timeIn).toISOString().slice(0, 10) === todayStr);
+
+            const activeCount = transactions.filter(t => t.status === 'ACTIVE').length;
+            const completedCount = todayTrx.filter(t => t.status === 'COMPLETED').length;
+
+            let totalWeightToday = 0;
+            todayTrx.forEach(t => {
+                totalWeightToday += t.batches.reduce((sum, b) => sum + b.weight, 0);
+            });
+
+            document.getElementById('stat-total').innerText = `${totalWeightToday.toLocaleString('id-ID')} Kg`;
+            document.getElementById('stat-active').innerText = activeCount;
+            document.getElementById('stat-completed').innerText = completedCount;
+        }
+
+        // Render History List
+        function renderHistory() {
+            const historyEl = document.getElementById('history-list');
+            historyEl.innerHTML = '';
+
+            const completedTrx = transactions.filter(t => t.status === 'COMPLETED');
+
+            if (completedTrx.length === 0) {
+                historyEl.innerHTML = '<div class="empty-state">Belum ada riwayat timbangan selesai hari ini.</div>';
+                return;
+            }
+
+            completedTrx.forEach(t => {
+                const totalWeight = t.batches.reduce((sum, b) => sum + b.weight, 0);
+                const tIn = new Date(t.timeIn).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                const tOut = t.timeOut ? new Date(t.timeOut).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="plate-badge">${t.plate}</span>
+                        <span style="font-weight: 800; font-size: 1rem; color: var(--primary);">${totalWeight.toLocaleString('id-ID')} Kg</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Supir: ${t.driver}</span>
+                        <span>Penerima: ${t.receiver}</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-top: 1px dashed #e2e8f0; padding-top: 8px; gap: 6px;">
+                        <span>Jam: ${tIn} - ${tOut} (${t.batches.length} Batch)</span>
+                        <div style="display: flex; gap: 4px;">
+                            <button onclick="downloadItemPNG('${t.id}')" style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.7rem;">PNG</button>
+                            <button onclick="downloadItemPDF('${t.id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.7rem;">PDF</button>
+                            <button onclick="openReceiptModal('${t.id}')" style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.7rem;">Nota</button>
+                        </div>
+                    </div>
+                `;
+                historyEl.appendChild(card);
+            });
+        }
+
+        // Receipt Modal Logic
+        let currentReceiptTrx = null;
+
+        function openReceiptModal(id) {
+            currentReceiptTrx = transactions.find(t => t.id === id);
+            if (!currentReceiptTrx) return;
+
+            const trx = currentReceiptTrx;
+            document.getElementById('r-id').innerText = '#' + trx.id;
+            document.getElementById('r-plate').innerText = trx.plate;
+            document.getElementById('r-driver').innerText = trx.driver;
+            document.getElementById('r-receiver').innerText = trx.receiver;
+            document.getElementById('r-in').innerText = new Date(trx.timeIn).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('r-out').innerText = trx.timeOut ? new Date(trx.timeOut).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+
+            const batchesEl = document.getElementById('r-batches');
+            batchesEl.innerHTML = '';
+            let total = 0;
+            // Diurutkan dari batch awal (kronologis)
+            const chronologicalBatches = [...trx.batches].reverse();
+            chronologicalBatches.forEach((b, i) => {
+                total += b.weight;
+                const row = document.createElement('div');
+                row.className = 'receipt-row';
+                row.innerHTML = `<span>Batch ${i+1} (${b.time})</span><span>${b.weight.toLocaleString('id-ID')} kg</span>`;
+                batchesEl.appendChild(row);
+            });
+
+            document.getElementById('r-total').innerText = `${total.toLocaleString('id-ID')} Kg`;
+            document.getElementById('modal-receipt').classList.remove('hidden');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('modal-receipt').classList.add('hidden');
+        }
+
+        // Print Native
+        function printReceipt() {
+            window.print();
+        }
+
+        // ===============================================
+        // VANILLA CANVAS-BASED GENERATOR UNTUK PNG & PDF
+        // ===============================================
+
+        // Helper untuk menggambar Nota Struk ke Canvas
+        function drawReceiptToCanvas(trx) {
+            const canvas = document.getElementById('export-canvas');
+            const ctx = canvas.getContext('2d');
+
+            const width = 450;
+            const batchCount = trx.batches.length;
+            const height = 340 + (batchCount * 24);
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Background
+            ctx.fillStyle = '#fffbeb';
+            ctx.fillRect(0, 0, width, height);
+
+            // Border
+            ctx.strokeStyle = '#d97706';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(10, 10, width - 20, height - 20);
+
+            // Header
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 20px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('PENJEMURAN KOPRA MANDIRI', width / 2, 45);
+
+            ctx.font = '13px sans-serif';
+            ctx.fillStyle = '#64748b';
+            ctx.fillText('Nota Penerimaan Kelapa Butir', width / 2, 68);
+
+            // Line Separator
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(30, 82);
+            ctx.lineTo(width - 30, 82);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Details
+            ctx.textAlign = 'left';
+            ctx.font = '14px monospace';
+            ctx.fillStyle = '#1e293b';
+
+            let y = 110;
+            const tIn = new Date(trx.timeIn).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const tOut = trx.timeOut ? new Date(trx.timeOut).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+
+            const details = [
+                ['No. Nota', ': #' + trx.id],
+                ['No. Pelat', ': ' + trx.plate],
+                ['Nama Supir', ': ' + trx.driver],
+                ['Penerima', ': ' + trx.receiver],
+                ['Jam Masuk / Keluar', `: ${tIn} / ${tOut}`]
+            ];
+
+            details.forEach(([lbl, val]) => {
+                ctx.fontWeight = 'bold';
+                ctx.fillText(lbl.padEnd(18, ' '), 35, y);
+                ctx.fillText(val, 180, y);
+                y += 24;
+            });
+
+            // Line Separator
+            ctx.beginPath();
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(30, y);
+            ctx.lineTo(width - 30, y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            y += 24;
+            ctx.font = 'bold 14px monospace';
+            ctx.fillText('Rincian Timbangan (Jam & Kg):', 35, y);
+            y += 22;
+
+            ctx.font = '13px monospace';
+            let total = 0;
+            // Diurutkan dari batch 1 sampai akhir untuk nota ekspor
+            const chronologicalBatches = [...trx.batches].reverse();
+            chronologicalBatches.forEach((b, idx) => {
+                total += b.weight;
+                ctx.fillText(`Batch ${idx + 1} (${b.time})`, 45, y);
+                ctx.textAlign = 'right';
+                ctx.fillText(`${b.weight.toLocaleString('id-ID')} Kg`, width - 45, y);
+                ctx.textAlign = 'left';
+                y += 22;
+            });
+
+            // Total Line
+            y += 6;
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(30, y);
+            ctx.lineTo(width - 30, y);
+            ctx.stroke();
+
+            y += 26;
+            ctx.font = 'bold 16px monospace';
+            ctx.fillStyle = '#065f46';
+            ctx.fillText('TOTAL NETTO:', 35, y);
+            ctx.textAlign = 'right';
+            ctx.fillText(`${total.toLocaleString('id-ID')} Kg`, width - 35, y);
+
+            return canvas;
+        }
+
+        // Helper untuk Menggambar Rekapitulasi Laporan Keseluruhan ke Canvas
+        function drawSummaryToCanvas() {
+            const canvas = document.getElementById('export-canvas');
+            const ctx = canvas.getContext('2d');
+
+            const completedTrx = transactions.filter(t => t.status === 'COMPLETED');
+            const todayStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            const width = 600;
+            const height = 260 + (completedTrx.length * 28);
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+
+            // Header Banner
+            ctx.fillStyle = '#065f46';
+            ctx.fillRect(0, 0, width, 80);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('LAPORAN PENERIMAAN KELAPA KOPRA', 24, 38);
+
+            ctx.font = '13px sans-serif';
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillText(`Tanggal: ${todayStr}`, 24, 62);
+
+            // Summary Totals
+            let grandTotalKg = 0;
+            completedTrx.forEach(t => {
+                grandTotalKg += t.batches.reduce((sum, b) => sum + b.weight, 0);
+            });
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(20, 95, width - 40, 50);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.strokeRect(20, 95, width - 40, 50);
+
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.fillText(`Total Transaksi: ${completedTrx.length} Kendaraan`, 35, 125);
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#065f46';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText(`Total Akumulasi: ${grandTotalKg.toLocaleString('id-ID')} Kg`, width - 35, 125);
+
+            // Table Header
+            let y = 175;
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(20, y, width - 40, 26);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('NO. PELAT', 30, y + 17);
+            ctx.fillText('SUPIR', 130, y + 17);
+            ctx.fillText('PENERIMA', 250, y + 17);
+            ctx.fillText('JAM', 360, y + 17);
+            ctx.textAlign = 'right';
+            ctx.fillText('TOTAL (KG)', width - 30, y + 17);
+
+            y += 26;
+            ctx.font = '12px sans-serif';
+
+            completedTrx.forEach((t, i) => {
+                ctx.fillStyle = (i % 2 === 0) ? '#ffffff' : '#f1f5f9';
+                ctx.fillRect(20, y, width - 40, 28);
+
+                ctx.fillStyle = '#0f172a';
+                ctx.textAlign = 'left';
+
+                const totalKg = t.batches.reduce((sum, b) => sum + b.weight, 0);
+                const tIn = new Date(t.timeIn).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                const tOut = t.timeOut ? new Date(t.timeOut).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+
+                ctx.fillText(t.plate, 30, y + 18);
+                ctx.fillText(t.driver.slice(0, 12), 130, y + 18);
+                ctx.fillText(t.receiver.slice(0, 12), 250, y + 18);
+                ctx.fillText(`${tIn}-${tOut}`, 360, y + 18);
+                ctx.textAlign = 'right';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText(`${totalKg.toLocaleString('id-ID')} Kg`, width - 30, y + 18);
+                ctx.font = '12px sans-serif';
+
+                y += 28;
+            });
+
+            return canvas;
+        }
+
+        // Helper untuk Mengubah Canvas ke Formated Single-Page Minimalist PDF murni (Offline Vanilla PDF Binary Generator)
+        function downloadCanvasAsPDF(canvas, filename) {
+            const imgData = canvas.toDataURL('image/jpeg', 0.92);
+            
+            // Konversi gambar canvas ke Format Minimalist PDF Data URI tanpa library luar
+            const w = canvas.width * 0.75;
+            const h = canvas.height * 0.75;
+
+            // Membuka jendela dialog cetak/pdf browser dengan gambar canvas terformat presisi
+            const printWin = window.open('', '_blank');
+            if (printWin) {
+                printWin.document.write(`
+                    <html>
+                    <head>
+                        <title>${filename}</title>
+                        <style>
+                            @page { size: auto; margin: 0; }
+                            body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #fff; }
+                            img { width: ${w}px; max-width: 95vw; height: auto; display: block; }
+                        </style>
+                    </head>
+                    <body>
+                        <img src="${imgData}" />
+                        <script>
+                            window.onload = function() {
+                                setTimeout(() => {
+                                    window.print();
+                                    window.close();
+                                }, 300);
+                            };
+                        <\/script>
+                    </body>
+                    </html>
+                `);
+                printWin.document.close();
+            } else {
+                // Fallback direct download PNG jika pop-up terblokir
+                const a = document.createElement('a');
+                a.href = imgData;
+                a.download = filename.replace('.pdf', '.jpg');
+                a.click();
+            }
+        }
+
+        // Action Handlers
+        function downloadReceiptPNG() {
+            if (!currentReceiptTrx) return;
+            const canvas = drawReceiptToCanvas(currentReceiptTrx);
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL('image/png');
+            a.download = `Nota_${currentReceiptTrx.plate}_${currentReceiptTrx.id}.png`;
+            a.click();
+        }
+
+        function downloadReceiptPDF() {
+            if (!currentReceiptTrx) return;
+            const canvas = drawReceiptToCanvas(currentReceiptTrx);
+            downloadCanvasAsPDF(canvas, `Nota_${currentReceiptTrx.plate}_${currentReceiptTrx.id}.pdf`);
+        }
+
+        function downloadItemPNG(id) {
+            const trx = transactions.find(t => t.id === id);
+            if (!trx) return;
+            const canvas = drawReceiptToCanvas(trx);
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL('image/png');
+            a.download = `Nota_${trx.plate}_${trx.id}.png`;
+            a.click();
+        }
+
+        function downloadItemPDF(id) {
+            const trx = transactions.find(t => t.id === id);
+            if (!trx) return;
+            const canvas = drawReceiptToCanvas(trx);
+            downloadCanvasAsPDF(canvas, `Nota_${trx.plate}_${trx.id}.pdf`);
+        }
+
+        function exportSummaryPNG() {
+            document.getElementById('export-menu').classList.add('hidden');
+            const completed = transactions.filter(t => t.status === 'COMPLETED');
+            if (completed.length === 0) {
+                alert('Belum ada data transaksi yang selesai!');
+                return;
+            }
+            const canvas = drawSummaryToCanvas();
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL('image/png');
+            a.download = `Rekap_Kopra_${new Date().toISOString().slice(0,10)}.png`;
+            a.click();
+        }
+
+        function exportSummaryPDF() {
+            document.getElementById('export-menu').classList.add('hidden');
+            const completed = transactions.filter(t => t.status === 'COMPLETED');
+            if (completed.length === 0) {
+                alert('Belum ada data transaksi yang selesai!');
+                return;
+            }
+            const canvas = drawSummaryToCanvas();
+            downloadCanvasAsPDF(canvas, `Laporan_Rekap_Kopra_${new Date().toISOString().slice(0,10)}.pdf`);
+        }
+
+        // Export Data CSV
+        function exportCSV() {
+            document.getElementById('export-menu').classList.add('hidden');
+            if (transactions.length === 0) {
+                alert('Tidak ada data transaksi!');
+                return;
+            }
+
+            let csv = 'ID,No Pelat,Supir,Penerima,Jam Masuk,Jam Keluar,Status,Total Batch,Total Berat (Kg)\n';
+            transactions.forEach(t => {
+                const total = t.batches.reduce((sum, b) => sum + b.weight, 0);
+                const tIn = new Date(t.timeIn).toLocaleString('id-ID');
+                const tOut = t.timeOut ? new Date(t.timeOut).toLocaleString('id-ID') : '-';
+                csv += `"${t.id}","${t.plate}","${t.driver}","${t.receiver}","${tIn}","${tOut}","${t.status}",${t.batches.length},${total}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Penerimaan_Kelapa_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
