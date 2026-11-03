@@ -34,7 +34,7 @@
                         </span>
                     </div>
                     <h1 class="text-2xl font-bold text-slate-900">Rekapitulasi Absensi Pegawai</h1>
-                    <p class="text-sm text-slate-500">Upload file Excel laporan scan/absensi (Format Standard atau report_scan) untuk merangkum jam masuk/keluar pegawai per tanggal.</p>
+                    <p class="text-sm text-slate-500">Upload file Excel laporan scan/absensi (Format report_scan atau standar) untuk merangkum jam masuk/keluar pegawai per tanggal.</p>
                 </div>
                 <button id="exportBtn" onclick="exportToExcel()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -272,6 +272,59 @@
             reader.readAsArrayBuffer(file);
         }
 
+        function parseDateTimeString(rawWaktu) {
+            if (!rawWaktu) return { dateStr: '', timeStr: '' };
+
+            const valStr = rawWaktu.toString().trim();
+            let dateStr = '';
+            let timeStr = '';
+
+            // Kasus 1: "31/10/2026 23:00:37" atau "2026-10-31 23:00:37"
+            if (valStr.includes(' ')) {
+                const parts = valStr.split(' ');
+                const rawDate = parts[0];
+                const rawTime = parts[1];
+
+                if (rawTime) {
+                    timeStr = rawTime.substring(0, 5); // Ambil HH:MM
+                }
+
+                if (rawDate.includes('/')) {
+                    // Format DD/MM/YYYY atau MM/DD/YYYY
+                    const dParts = rawDate.split('/');
+                    if (dParts.length === 3) {
+                        // Jika dParts[2] adalah tahun (4 digit) -> DD/MM/YYYY
+                        if (dParts[2].length === 4) {
+                            dateStr = `${dParts[2]}-${dParts[1].padStart(2, '0')}-${dParts[0].padStart(2, '0')}`;
+                        } else if (dParts[0].length === 4) { // YYYY/MM/DD
+                            dateStr = `${dParts[0]}-${dParts[1].padStart(2, '0')}-${dParts[2].padStart(2, '0')}`;
+                        }
+                    }
+                } else if (rawDate.includes('-')) {
+                    const dParts = rawDate.split('-');
+                    if (dParts.length === 3) {
+                        if (dParts[0].length === 4) { // YYYY-MM-DD
+                            dateStr = `${dParts[0]}-${dParts[1].padStart(2, '0')}-${dParts[2].padStart(2, '0')}`;
+                        } else if (dParts[2].length === 4) { // DD-MM-YYYY
+                            dateStr = `${dParts[2]}-${dParts[1].padStart(2, '0')}-${dParts[0].padStart(2, '0')}`;
+                        }
+                    }
+                }
+            } else {
+                // Jika hanya tanggal
+                if (valStr.includes('/')) {
+                    const dParts = valStr.split('/');
+                    if (dParts.length === 3 && dParts[2].length === 4) {
+                        dateStr = `${dParts[2]}-${dParts[1].padStart(2, '0')}-${dParts[0].padStart(2, '0')}`;
+                    }
+                } else if (valStr.includes('-')) {
+                    dateStr = valStr;
+                }
+            }
+
+            return { dateStr, timeStr };
+        }
+
         function processData(data) {
             rawData = [];
             groupedData = {};
@@ -282,31 +335,41 @@
 
             data.forEach(row => {
                 const nama = (row['Nama'] || row['NAMA'] || row['Name'] || row['Nama Pegawai'] || '').toString().trim();
+                const rawWaktu = row['Waktu Absensi'] || row['Waktu'] || row['WAKTU'] || row['Scan Time'] || '';
+                
                 let tgl = (row['Tanggal Absensi'] || row['Tanggal'] || row['TANGGAL'] || row['Date'] || '').toString().trim();
                 let jam = (row['Jam Absensi'] || row['Jam'] || row['JAM'] || row['Time'] || '').toString().trim();
-                
-                // Tambahan: Parse format report_scan (kolom "Waktu" berisi "YYYY-MM-DD HH:MM:SS")
-                const waktuFull = (row['Waktu'] || row['WAKTU'] || row['Scan Time'] || '').toString().trim();
-                if (waktuFull && waktuFull.includes(' ')) {
-                    const parts = waktuFull.split(' ');
-                    if (!tgl) tgl = parts[0];
-                    if (!jam) jam = parts[1];
+
+                let formattedDate = '';
+                let formattedJam = '';
+
+                // Dukungan format report_scan (Waktu Absensi gabungan DD/MM/YYYY HH:MM:SS)
+                if (rawWaktu) {
+                    const parsed = parseDateTimeString(rawWaktu);
+                    if (parsed.dateStr) formattedDate = parsed.dateStr;
+                    if (parsed.timeStr) formattedJam = parsed.timeStr;
+                }
+
+                // Fallback jika menggunakan kolom terpisah Tanggal Absensi & Jam Absensi
+                if (!formattedDate && tgl) {
+                    if (tgl.includes('/')) {
+                        const parts = tgl.split('/');
+                        if (parts.length === 3 && parts[2].length === 4) {
+                            formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                        }
+                    } else {
+                        formattedDate = tgl;
+                    }
+                }
+
+                if (!formattedJam && jam) {
+                    formattedJam = jam.substring(0, 5);
                 }
 
                 const kantor = (row['Kantor'] || row['KANTOR'] || row['Office'] || row['OFFICE'] || row['Perusahaan'] || row['Departemen'] || row['Nama Perangkat'] || '').toString().trim();
                 if (kantor) officeSet.add(kantor);
 
-                if (nama && tgl && jam) {
-                    let formattedDate = tgl;
-                    if (tgl.includes('/')) {
-                        const parts = tgl.split('/');
-                        if (parts[2] && parts[2].length === 4) {
-                            formattedDate = `${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
-                        }
-                    }
-
-                    let formattedJam = jam.substr(0, 5);
-
+                if (nama && formattedDate && formattedJam) {
                     datesSet.add(formattedDate);
                     employeesSet.add(nama);
 
@@ -404,7 +467,7 @@
             return closestShift;
         }
 
-        // Evaluasi Jam Kerja & Lembur Sesuai Aturan Baru
+        // Evaluasi Jam Kerja & Lembur
         function analyzeJamList(jamList) {
             if (!jamList || jamList.length === 0) {
                 return { status: 'EMPTY', items: [], lemburMin: 0 };
@@ -443,7 +506,6 @@
                 const isMasukOk = !shiftIn.useIn || (j1 <= shiftIn.wIn);
                 const isPulangOk = !shiftOut.useOut || (j3 >= shiftOut.wOut);
 
-                // Hitung kelebihan menit lembur dari jam scan ke-3 dibanding jam pulang shift
                 let lemburMin = 0;
                 const scan3Min = timeToMinutes(j3);
                 const shiftOutMin = timeToMinutes(shiftOut.wOut);
@@ -516,12 +578,11 @@
             return { status: 'FULL', items: resultItems, lemburMin: 0 };
         }
 
-        // Penentuan Warna Sesuai Aturan Revisi User
+        // Penentuan Warna Sesuai Aturan User
         function getCellStatus(analysis) {
-            if (analysis.status === 'EMPTY') return 'RED'; // Merah jika tidak ada scan sama sekali
-            if (analysis.status === 'SINGLE') return 'YELLOW'; // Kuning jika hanya ada 1 scan
+            if (analysis.status === 'EMPTY') return 'RED'; // Merah jika tidak ada scan
+            if (analysis.status === 'SINGLE') return 'YELLOW'; // Kuning jika 1 scan
 
-            // Jika minimal 1 pasang (>= 2 scan)
             const hasAmber = analysis.items.some(i => i.color === 'amber');
             if (hasAmber) return 'YELLOW'; // Jika terlambat / pulang cepat
             
@@ -582,7 +643,6 @@
                     else if (status === 'YELLOW') countYellow++;
                     else if (status === 'RED') countRed++;
 
-                    // Kumpul Rekap Lembur
                     if (analysis.lemburMin > 0) {
                         totalLemburMenit += analysis.lemburMin;
                         lemburCount++;
@@ -606,7 +666,6 @@
                     }
                 });
 
-                // Format string rekap lembur: "120 menit, 2 kali lembur {5, 12}"
                 let rekapLemburText = '-';
                 if (lemburCount > 0) {
                     rekapLemburText = `${totalLemburMenit} menit, ${lemburCount} kali lembur {${lemburDates.join(', ')}}`;
@@ -635,7 +694,7 @@
             return dateStr;
         }
 
-        // Fitur Export Excel dengan Penyesuaian Font Size 12pt
+        // Fitur Export Excel
         function exportToExcel() {
             const { filteredDates, filteredEmployees } = getFilteredData();
             
@@ -761,7 +820,7 @@
                             alignment: { horizontal: "center", vertical: "center", wrapText: true }
                         };
                     } 
-                    // Styling Baris Data (Angka & Isi Font 12pt)
+                    // Styling Baris Data
                     else if (R >= startDataRowIndex) {
                         let cellFillColor = isEvenDataRow ? "FFFFFF" : "F8FAFC";
                         let fontColor = "0F172A";
