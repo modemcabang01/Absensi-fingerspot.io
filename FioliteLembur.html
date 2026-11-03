@@ -34,7 +34,7 @@
                         </span>
                     </div>
                     <h1 class="text-2xl font-bold text-slate-900">Rekapitulasi Absensi Pegawai</h1>
-                    <p class="text-sm text-slate-500">Upload file Excel laporan scan/absensi untuk merangkum jam masuk/keluar pegawai per tanggal.</p>
+                    <p class="text-sm text-slate-500">Upload file Excel laporan scan/absensi (Format Standard atau report_scan) untuk merangkum jam masuk/keluar pegawai per tanggal.</p>
                 </div>
                 <button id="exportBtn" onclick="exportToExcel()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -45,7 +45,7 @@
             <!-- Form Upload File -->
             <div class="grid grid-cols-1 gap-4 mb-4">
                 <div>
-                    <label class="block text-xs font-semibold uppercase mb-1 text-slate-600">Pilih File Excel Absensi Fingerspot (.xlsx / .xls)</label>
+                    <label class="block text-xs font-semibold uppercase mb-1 text-slate-600">Pilih File Excel Absensi / Report Scan (.xlsx / .xls)</label>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-slate-300 rounded-lg cursor-pointer bg-slate-50">
                 </div>
             </div>
@@ -282,17 +282,27 @@
 
             data.forEach(row => {
                 const nama = (row['Nama'] || row['NAMA'] || row['Name'] || row['Nama Pegawai'] || '').toString().trim();
-                const tgl = (row['Tanggal Absensi'] || row['Tanggal'] || row['TANGGAL'] || row['Date'] || '').toString().trim();
-                const jam = (row['Jam Absensi'] || row['Jam'] || row['JAM'] || row['Time'] || '').toString().trim();
+                let tgl = (row['Tanggal Absensi'] || row['Tanggal'] || row['TANGGAL'] || row['Date'] || '').toString().trim();
+                let jam = (row['Jam Absensi'] || row['Jam'] || row['JAM'] || row['Time'] || '').toString().trim();
                 
-                const kantor = (row['Kantor'] || row['KANTOR'] || row['Office'] || row['OFFICE'] || row['Perusahaan'] || row['Departemen'] || '').toString().trim();
+                // Tambahan: Parse format report_scan (kolom "Waktu" berisi "YYYY-MM-DD HH:MM:SS")
+                const waktuFull = (row['Waktu'] || row['WAKTU'] || row['Scan Time'] || '').toString().trim();
+                if (waktuFull && waktuFull.includes(' ')) {
+                    const parts = waktuFull.split(' ');
+                    if (!tgl) tgl = parts[0];
+                    if (!jam) jam = parts[1];
+                }
+
+                const kantor = (row['Kantor'] || row['KANTOR'] || row['Office'] || row['OFFICE'] || row['Perusahaan'] || row['Departemen'] || row['Nama Perangkat'] || '').toString().trim();
                 if (kantor) officeSet.add(kantor);
 
                 if (nama && tgl && jam) {
                     let formattedDate = tgl;
                     if (tgl.includes('/')) {
                         const parts = tgl.split('/');
-                        if (parts[2] && parts[2].length === 4) formattedDate = `${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
+                        if (parts[2] && parts[2].length === 4) {
+                            formattedDate = `${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
+                        }
                     }
 
                     let formattedJam = jam.substr(0, 5);
